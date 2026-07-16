@@ -1,0 +1,571 @@
+[
+  {
+    "id": 1,
+    "name": "Bou Azzer",
+    "region": "Drâa-Tafilalet",
+    "province": "Ouarzazate",
+    "structural_domain": "Anti-Atlas",
+    "latitude": 30.5181,
+    "longitude": -6.9105,
+    "status": "active",
+    "main_substance": "Cobalt (Co)",
+    "other_substances": [
+      "Nickel (Ni)",
+      "Arsenic (As)"
+    ],
+    "id_mine": "BOUAZZER-01",
+    "massif": "Anti-Atlas central — Boutonnière de Bou Azzer–El Graara",
+    "localisation": "Boutonnière allongée WNW–ESE, ~60 km de longueur, 5 à 20 km de largeur",
+    "coords_dms": "N 30°31'05.3'' / W 06°54'37.9''",
+    "operateur": "Managem (CTT — Compagnie de Tifnout Tiranimine)",
+    "duree_exploitation": "Depuis 1934 (SMAG) — exploitation continue à ce jour",
+    "rehabilitation": "Mine active",
+    "deposit_type": "Gisement hydrothermal cobaltifère associé aux serpentinites néoprotérozoïques — seul producteur de cobalt comme substance principale en Afrique.",
+    "histoire": [
+      "La mine de Bou Azzer est située dans la boutonnière de Bou Azzer–El Graara, au cœur de l'Anti-Atlas central, dans la province de Ouarzazate. Cette boutonnière s'allonge suivant une direction générale WNW–ESE, sur près de 60 km de longueur et 5 à 20 km de largeur. Elle regroupe deux principaux centres miniers : Bou Azzer et Bleida. Sur le plan géologique, cette zone appartient à l'Accident Majeur de l'Anti-Atlas, considéré comme une ancienne zone de suture panafricaine marquée par la présence d'un complexe ophiolitique néoprotérozoïque, notamment des serpentinites issues de l'altération des roches ultrabasiques (Leblanc, 1975 ; Soulaimani et al., 2018 ; Levresse, 2018).",
+      "Le district de Bou Azzer est surtout connu pour ses minéralisations cobaltifères. Contrairement à plusieurs districts métallifères où le cobalt est récupéré comme sous-produit, Bou Azzer se distingue par l'exploitation du cobalt comme substance principale. Cette particularité donne à la mine une importance économique et stratégique, surtout dans le contexte actuel où le cobalt est fortement recherché pour les technologies modernes et les batteries électriques (Soulaimani et al., 2018).",
+      "L'histoire minière de Bou Azzer commence avec les premières prospections en 1929, suivies d'une exploitation manuelle en 1932. La production industrielle débute en 1934 avec la SMAG. Entre 1953 et 1958, la société Peñarroya relance l'exploration et développe les travaux miniers. À partir de 1958, l'exploitation passe sous la direction de l'ONA, à travers sa filiale CTT. Par la suite, plusieurs campagnes de prospection ont permis la découverte de nouveaux gisements, notamment Taghouni, Bou Azzer Est et Tamdrost (Soulaimani et al., 2018)."
+    ],
+    "roche_enc": "Serpentinites néoprotérozoïques issues de l'altération de roches ultrabasiques — complexe ophiolitique",
+    "age_geo": "Néoprotérozoïque (Précambrien)",
+    "direction": "WNW–ESE (direction générale de la boutonnière)",
+    "ext_h": "~60 km (boutonnière) — corps minéralisés en filons/lentilles localisés",
+    "epaisseur": "Variable selon les corps (filons, lentilles, veines, veinules, disséminations)",
+    "profondeur": "Variable selon les secteurs (Bou Azzer, Bou Azzer Est, Bleida, Taghouni, Tamdrost)",
+    "ctrl_struct": "Accident Majeur de l'Anti-Atlas — ancienne zone de suture panafricaine ; contrôle structural et lithologique majeur (contact serpentinite–diorite quartzique, structures transversales)",
+    "intrusion": "Diorite quartzique (contact avec serpentinites)",
+    "min_princ": "Skuttérudite, Cobaltite (minéraux porteurs de Co–Ni–Fe–As)",
+    "min_assoc": "Arsénopyrite · Chalcopyrite · Pyrite · Sphalérite",
+    "gangue": "Serpentinite (roche hôte altérée)",
+    "min_sec": "Érythrite (minéral secondaire d'altération dans les zones oxydées)",
+    "genese": "Minéralisation hydrothermale liée à la circulation de fluides dans les fractures et zones de contact serpentinite–diorite, dans le contexte de l'Accident Majeur de l'Anti-Atlas (Ennaciri 1995 ; Tourneur 2019)",
+    "mineralogie_txt": [
+      "Du point de vue métallogénique, les gisements sont dominés par des minéraux porteurs de Co–Ni–Fe–As, notamment les arséniures et sulfo-arséniures. Les principaux minéraux rencontrés sont la skuttérudite, la cobaltite, l'arsénopyrite, ainsi que des sulfures associés comme la chalcopyrite, la pyrite et la sphalérite. Des minéraux secondaires d'altération, comme l'érythrite, peuvent également apparaître dans les zones oxydées. Ces associations minérales traduisent une évolution hydrothermale complexe, liée à la circulation de fluides dans les fractures et les zones de contact (Ennaciri, 1995 ; Tourneur, 2019)."
+    ],
+    "genese_txt": [
+      "Les minéralisations de Bou Azzer sont principalement de type hydrothermal. Elles sont associées aux serpentinites et se présentent sous forme de filons, lentilles, veines, veinules et disséminations. Dans le secteur de Bou Azzer Est, les corps minéralisés apparaissent soit au contact serpentinite–diorite quartzique, soit dans des structures transversales recoupant les contacts lithologiques. Cette disposition montre le rôle majeur du contrôle structural et lithologique dans la mise en place de la minéralisation (Tourneur, 2019)."
+    ],
+    "cadre_geo_txt": [
+      "La mine de Bou Azzer est localisée dans la boutonnière de Bou Azzer–El Graara, au niveau de l'Anti-Atlas central, dans la province de Ouarzazate. Elle se situe approximativement aux coordonnées 30°31'05.3''N ; 6°54'37.9''W, soit environ 30.5181° N ; 6.9105° W en coordonnées décimales. Cette boutonnière présente une forme allongée suivant une direction générale WNW–ESE, avec une longueur d'environ 60 km et une largeur variant entre 5 et 20 km. Elle occupe une position importante dans le Sud marocain, le long de l'Accident Majeur de l'Anti-Atlas, qui constitue une structure tectonique régionale majeure.",
+      "Sur le plan minier, la boutonnière de Bou Azzer–El Graara regroupe plusieurs secteurs d'exploitation, dont Bou Azzer, Bou Azzer Est et Bleida. Le secteur de Bou Azzer Est correspond à la partie orientale du district minier. Il est caractérisé par un relief aride, des affleurements précambriens bien exposés et une couverture végétale faible, ce qui rend la zone favorable aux travaux de cartographie géologique, structurale et minière."
+    ],
+    "geological_description": "Gisement hydrothermal cobaltifère associé aux serpentinites néoprotérozoïques de la boutonnière de Bou Azzer–El Graara (Anti-Atlas central). Minéralisations en filons, lentilles, veines et disséminations, contrôlées par l'Accident Majeur de l'Anti-Atlas. Minéraux principaux : skuttérudite, cobaltite, arsénopyrite. Seul producteur de cobalt comme substance principale en Afrique.",
+    "mining_waste": "Haldes, stériles miniers, rejets liés à l'exploitation du cobalt. Données détaillées à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Contamination métallique (Co, Ni, As), drainage minier acide potentiel, dispersion des éléments traces métalliques dans les sols et eaux environnants. Données chiffrées à compléter.",
+    "treatment_methods": [
+      "Caractérisation géochimique approfondie des stériles",
+      "Stabilisation physico-chimique",
+      "Récupération des métaux valorisables (Co, Ni)",
+      "Suivi environnemental continu des eaux"
+    ],
+    "references": "[1] Leblanc M. (1975). Étude géologique du district de Bou Azzer. | [2] Ennaciri A. (1995). Métallogénie du district de Bou Azzer. | [3] Soulaimani A. et al. (2018). Geology and mineral deposits of the Bou Azzer district, Anti-Atlas, Morocco. | [4] Levresse G. (2018). Ophiolite complex and Co-Ni-As mineralization, Bou Azzer. | [5] Tourneur E. (2019). Structural control of Co-Ni-As mineralization, Bou Azzer Est.",
+    "image": null
+  },
+  {
+    "id": 2,
+    "name": "Kettara",
+    "region": "Marrakech-Safi",
+    "province": "Marrakech",
+    "structural_domain": "Meseta",
+    "latitude": 31.8704,
+    "longitude": -8.1753,
+    "status": "abandoned",
+    "main_substance": "Soufre",
+    "other_substances": [
+      "Cuivre",
+      "Ocre",
+      "Oxyde de fer (limonite)"
+    ],
+    "id_mine": "KETTARA-01",
+    "massif": "Jebilets centrales (massif hercynien)",
+    "localisation": "~30–32 km au nord-nord-ouest de Marrakech",
+    "altitude": "500 m",
+    "acces": "Route Marrakech–Safi",
+    "coords_dms": "N 31°52'15'' / W 08°10'31''",
+    "operateur": "SYPEK Corporation",
+    "client": "Maroc Chimie 1 (Groupe OCP) usine acide sulfurique, Safi",
+    "rehabilitation": "site totalement abandonné ",
+    "duree_exploitation": "44 ans (1938–1982)",
+    "raisons_fermeture": "Oxydation très rapide de la pyrrhotite lors du stockage et instabilité chimique du concentré · Pauvreté relative en soufre du minerai primaire (25% S) rendant le grillage peu rentable · Quantité excessive de résidus cendreux générés lors du traitement · Corrosion accélérée des infrastructures et équipements par le drainage minier acide (DMA) · Difficultés techniques dans l'utilisation du concentré à l'unité de grillage de Maroc Chimie",
+    "phases": [
+      {
+        "num": "I",
+        "periode": "1938–1963",
+        "substance": "Chapeau de fer — oxyde de fer ",
+        "production": "150 000 t à 45–52% Fe "
+      },
+      {
+        "num": "II",
+        "periode": "1955–1966",
+        "substance": "Pyrite zone de cémentation — Cu récupéré",
+        "production": "Réserves : 180 000 t à 38% S"
+      },
+      {
+        "num": "III",
+        "periode": "1964–1982",
+        "substance": "Minerai primaire à pyrrhotite",
+        "production": "8 Mt brut → 5,2 Mt concentré à 29% S · réserves ~30 Mt"
+      }
+    ],
+    "histoire": [
+      "La mine de Kettara, située dans les Jebilet centrales à environ 32 km au nord de Marrakech, constitue l'un des anciens sites miniers les plus importants du massif hercynien des Jebilet. Le gisement a été découvert grâce à son chapeau de fer bien développé, visible en surface. Ce chapeau de fer correspond à la zone oxydée d'un amas sulfuré profond dominé par la pyrrhotite. Kettara fut ainsi le premier amas sulfuré reconnu dans les Jebilet centrales (Huvelin, 1977 ; Essaifi, 2011).",
+      "L'exploitation de la mine s'est déroulée en trois grandes étapes, correspondant à la zonalité verticale du gisement. La première phase, entre 1938 et 1963, a concerné l'exploitation du chapeau de fer pour l'oxyde de fer et surtout pour les poches d'ocre de bonne qualité. Les tonnages extraits sont estimés à environ 150 000 tonnes de minerai à 45–52 % Fe et 50 000 tonnes à 50–58 % Fe (Huvelin, 1977 ; Essaifi, 2011).",
+      "La deuxième phase, entre 1955 et 1966, a porté sur l'exploitation de la pyrite dans la zone de cémentation. Ce minerai était utilisé pour la fabrication de l'acide sulfurique. Durant cette période, le cuivre était également récupéré à partir de minéraux secondaires comme la chalcocite et la covellite. Les réserves de cette zone étaient estimées à environ 180 000 tonnes à 38 % S (Huvelin, 1977 ; Essaifi, 2011).",
+      "La troisième phase, de 1964 à 1982, correspond à l'exploitation du minerai primaire riche en pyrrhotite, principalement pour la production de soufre destiné à l'usine d'acide sulfurique de Safi. Les réserves du minerai brut étaient estimées à environ 30 millions de tonnes, avec une teneur moyenne de 25 % S et 0,6 % Cu. Environ 8 millions de tonnes ont été extraites pendant cette période (Huvelin, 1977 ; Bernard et al., 1988 ; Essaifi, 2011).",
+      "La mine a été fermée en 1982. Cette fermeture est liée à plusieurs contraintes techniques et économiques : l'oxydation rapide de la pyrrhotite, la faible teneur en soufre du minerai et la production importante de résidus cendreux. Après l'arrêt de l'activité minière, les rejets sulfurés sont restés exposés à l'air libre, ce qui a favorisé l'oxydation des sulfures et la génération de drainage minier acide, avec des risques de contamination des sols et des eaux souterraines (Hakkou et al., 2008 ; Soudani & Taddrart, 2021)."
+    ],
+    "deposit_type_titre": "Géologie et mode de genèse du gisement de Kettara",
+    "deposit_type": [
+      "Le gisement de Kettara est situé dans les Jebilet centrales, à environ 32 km au nord de Marrakech, au sein du massif hercynien des Jebilet. Il appartient à une province métallogénique caractérisée par plusieurs amas sulfurés à pyrrhotite, généralement associés à des chapeaux de fer bien développés en surface. Le corps minéralisé est encaissé dans les métapélites viséennes de la série de Sarhlef, correspondant à une ancienne série argileuse volcano-sédimentaire affectée par un métamorphisme régional de faible degré et par une schistosité subverticale d'âge varisque (Essaifi, 2011).",
+      "Sur le plan géométrique, la minéralisation se présente sous forme d'une lentille subverticale de sulfures massifs, orientée approximativement N60, parallèlement à la schistosité régionale. Cette lentille s'étend sur environ 1,6 km de longueur, peut atteindre 70 m d'épaisseur et s'enracine jusqu'à environ 500 m de profondeur. La paragenèse est dominée par la pyrrhotite (plus de 90 %), associée à la pyrite, la chalcopyrite, la magnétite et le glaucodot, tandis que la sphalérite, la galène et l'arsénopyrite apparaissent en phases accessoires. La gangue principale est le chlorite (Essaifi, 2011).",
+      "Le gisement est spatialement associé à l'intrusion mafique-ultramafique de Koudiat Kettara, située à environ 1 km au sud-est. L'altération hydrothermale est exprimée par une association quartz–carbonate–chlorite au niveau de l'éponte inférieure et séricite–quartz au niveau de l'éponte supérieure, traduisant une circulation de fluides minéralisateurs contrôlée par les structures tectoniques (Essaifi, 2011).",
+      "La genèse du gisement reste discutée entre une origine syngénétique exhalative (type VMS ou SEDEX) et une origine épigénétique liée au remplacement des roches encaissantes. Le modèle épigénétique considère l'amas comme une zone de décharge de fluides induits par la mise en place de l'intrusion gabbroïque de Koudiat Kettara. La signature isotopique du soufre (δ³⁴S = +0,43 ‰) reste compatible avec une source magmatique ou un lessivage convectif des sulfures (Essaifi, 2011).",
+      "Les données structurales récentes (Cisse & Wafik, 2026) montrent que le gisement est localisé dans une zone de cisaillement décrochante dextre varisque. La déformation a produit une foliation S1, une foliation pénétrative S2 et des plis tardifs P3 en chevron. Cette évolution a provoqué la rotation progressive du corps sulfuré jusqu'à sa position subverticale actuelle.",
+      "Les zones de cisaillement et fabriques C/S ont joué le rôle de drains préférentiels pour les fluides hydrothermaux. La paragenèse montre deux stades métallogéniques : un stade 1 à pyrrhotite massive (fluides Si–S) et un stade 2 à précipitation Cu–Zn–Fe disséminée (fissuration des sulfures et infiltration de fluides enrichis en Cu–Zn–Fe) (Cisse & Wafik, 2026).",
+      "L'altération supergène a transformé la partie supérieure en chapeau de fer, exploitée pour l'ocre et les oxydes de fer. La zone de cémentation contient du cuivre natif, de la chalcocite et de la covellite. L'oxydation des rejets sulfurés explique le potentiel de drainage minier acide du site abandonné (Soudani & Taddrart, 2021).",
+      "En synthèse, le gisement de Kettara est un amas sulfuré massif à pyrrhotite d'évolution polyphasée : accumulation volcano-sédimentaire viséenne, remobilisation dans une zone de cisaillement dextre varisque, redistribution par fluides hydrothermaux liés à l'intrusion de Koudiat Kettara, puis oxydation supergène responsable du chapeau de fer et des minéraux secondaires de cuivre."
+    ],
+    "roche_enc": "Métapélites (Schistes du Sarhlef) — Viséen moyen–supérieur",
+    "age_geo": "Viséen moyen–supérieur (Carbonifère)",
+    "direction": "N60° — parallèle à la schistosité régionale",
+    "ext_h": "1,6 km",
+    "epaisseur": "70 m",
+    "profondeur": "500 m",
+    "ctrl_struct": "Zone de cisaillement dextre varisque · fabriques C/S (Cisse & Wafik 2026)",
+    "intrusion": "Intrusion mafique-ultramafique Koudiat Kettara (1 km SE)",
+    "min_princ": "Pyrrhotite (> 90%)",
+    "min_assoc": "Pyrite · Chalcopyrite · Galène · Sphalérite · Arsénopyrite · Galucodot · Magnétite",
+    "gangue": "Chlorite",
+    "stade1": "Pyrrhotite massive + fluides riches en Si-S — remobilisation syn-métamorphique",
+    "stade2": "Précipitation Cu-Zn-Fe disséminée — fracturation + infiltration fluides",
+    "zone_cem": "Cuivre natif · Chalcocite · Covellite · Traces Ag + Au",
+    "genese": "① VMS/SEDEX (Bernard 1988) <br> ② Épigénétique hydrothermal (Essaifi 2008) <br> ③ Contrôle cisaillement (Cisse 2026)",
+    "mineralogie_txt": [
+      "Le minerai de la mine de Kettara est dominé par les sulfures massifs riches en pyrrhotite. La pyrrhotite constitue la phase principale du minerai, avec une proportion supérieure à 90 %. Elle est associée à la pyrite, la chalcopyrite, la magnétite et le glaucodot (Co,Fe)AsS. Des phases accessoires sont également signalées, notamment la sphalérite, la galène et l'arsénopyrite. La gangue principale est représentée par la chlorite (Essaifi, 2011)."
+    ],
+    "genese_txt": [
+      "Les données structurales récentes indiquent que le gisement se situe dans une zone de cisaillement ductile dextre appartenant à la chaîne varisque. Le gradient de déformation augmente depuis les roches volcano-sédimentaires encaissantes vers la lentille minéralisée, avec une déformation maximale au contact minerai–encaissant. Cette déformation a produit plusieurs générations structurales : une foliation précoce S1 orientée globalement N45, une foliation pénétrative S2 associée à des plis isoclinaux serrés, puis des plis tardifs P3 en chevron observés dans le corps minéralisé. Ces structures expliquent la rotation tectonique et le redressement progressif de la lentille sulfurée jusqu'à sa position subverticale actuelle (Cisse & Wafik, 2026).",
+      "La genèse du gisement reste discutée. Deux modèles principaux ont été proposés : un modèle syngénétique exhalatif, comparable aux amas sulfurés de type VMS ou SEDEX, et un modèle épigénétique hydrothermal, lié à la circulation de fluides minéralisants et au remplacement des roches encaissantes. Le modèle épigénétique associe la mise en place du gisement à l'activité hydrothermale induite par l'intrusion gabbroïque de Koudiat Kettara, située à proximité du corps sulfuré (Essaifi, 2011)."
+    ],
+    "delta_s": "+0,43 ± 0,04 ‰",
+    "min_sec": "Halotrichite · Goethite · Jarosite · Copiapite · Gypse · Starkeyite · Alunite · Butterite · Coquimbite",
+    "res_brutes": "~30 Mt de minerai brut à 25% S et 0,6% Cu",
+    "min_extrait": "~8 Mt de minerai brut extrait",
+    "conc_produit": "> 5,2 Mt de minerai sulfuré exploité",
+    "vol_res": "> 3 millions de tonnes de déchets miniers",
+    "surf_res": "~16 hectares",
+    "struct_stock": "Digue (15 m) + Bassin décantation + Piles de stériles",
+    "S_solides": "1,6–14,5 wt%",
+    "Fe_solides": "17,4–40,7 wt%",
+    "S_sol": "4,1% (14× sol témoin)",
+    "pH_res": "5,1 ± 0,3 (très acide)",
+    "cond_res": "7 570 µS/cm (8× sol témoin)",
+    "oxyd_fins": "5–15 cm (hardpan)",
+    "oxyd_gros": "jusqu'à 75 cm",
+    "AP": "51–453 kg CaCO₃/t",
+    "NP": "0–9 kg CaCO₃/t (quasi nul)",
+    "NNP": "−453 à −22,5 → acido-générateur",
+    "NP_AP": "0–0,1 < 1 → acido-générateur",
+    "DMA_dep": "> 42 ans (depuis 1982)",
+    "pH_KC1": "6,7 ± 0,4",
+    "pH_KC2": "6,9 ± 0,4",
+    "cond_KC1": "1 706 ± 37 µS/cm",
+    "cond_KC2": "1 830 ± 53 µS/cm",
+    "m_res": {
+      "Cd": "157,2±8,8",
+      "Cu": "969,1±38,7",
+      "Pb": "2640,7±42,7",
+      "Zn": "2846,8±84,6"
+    },
+    "m_KC1": {
+      "Cd": "2,6±0,7",
+      "Cu": "427,8±25,3",
+      "Pb": "384,0±27,1",
+      "Zn": "756,4±74,3"
+    },
+    "m_KC2": {
+      "Cd": "2,2±0,2",
+      "Cu": "330,5±22,8",
+      "Pb": "355,3±24,0",
+      "Zn": "690,5±51,0"
+    },
+    "m_tem": {
+      "Cd": "0,4±0,1",
+      "Cu": "40,7±0,7",
+      "Pb": "11,8±1,4",
+      "Zn": "133,9±2,0"
+    },
+    "CF": {
+      "Cd": "6,5",
+      "Cu": "10,5",
+      "Pb": "32,5",
+      "Zn": "5,6"
+    },
+    "PI_KC1": "55,1",
+    "PI_KC2": "48,9",
+    "PI_res": "661,9",
+    "SO4_eau": "1 300 mg/L (puits)",
+    "SO4_ruis": "jusqu'à 45 g/L",
+    "comm": "KC1 + KC2 — 7 000 ha · 72% agricoles",
+    "cultures": "Riz paddy · jardins potagers en aval direct",
+    "climat": "Méditerranéen aride à semi-aride",
+    "precip": "227 mm/an",
+    "T_min": "10,3°C (janv.)",
+    "T_max": "37,2°C (juil.)",
+    "etp": "> 2 500 mm/an",
+    "geological_description": "Amas sulfuré massif à pyrrhotite · Jebilets centrales · 1,6 km × 70 m × 500 m (N60°) · Pyrrhotite >90% · Zone cisaillement dextre varisque · Intrusion Koudiat Kettara.",
+    "mining_waste": ">3 Mt résidus · 16 ha · pH 5,1 · CE 7570 µS/cm · S 4,1% · AP 51–453 · NP 0–9 kg CaCO₃/t · DMA >42 ans.",
+    "environmental_impacts": "Pb résidus 2641 · Zn 2847 · Cu 969 · Cd 157 mg/kg · PI KC1=55,1 · PI résidus=661,9 · 7000 ha exposés · Aucune réhabilitation (2026).",
+    "treatment_methods": {
+      "hakkou": [
+        {
+          "opt": "Option 1",
+          "titre": "Couverture barrière capillaire (store-and-release)",
+          "desc": "Limiter la percolation d'eau dans les résidus réactifs → réduire la production de DMA"
+        },
+        {
+          "opt": "Option 2",
+          "titre": "Utilisation de stériles alcalins de la carrière phosphatée voisine (Sidi Bou Othmane — OCP)",
+          "desc": "Neutralisation de l'acidité → formation d'un hardpan de goethite limitant l'infiltration"
+        }
+      ],
+      "barkouch": [
+        {
+          "num": "①",
+          "titre": "Phytoremédiation avec espèces tolérantes aux métaux lourds"
+        },
+        {
+          "num": "②",
+          "titre": "Techniques de lavage des sols contaminés"
+        },
+        {
+          "num": "③",
+          "titre": "Amendements stabilisants : chaux ou biochar pour immobiliser les métaux et améliorer le pH"
+        },
+        {
+          "num": "④",
+          "titre": "Réglementation de l'usage des terres dans les zones KC1 et KC2"
+        },
+        {
+          "num": "⑤",
+          "titre": "Programme de surveillance environnementale à long terme (eaux, sols, cultures)"
+        },
+        {
+          "num": "⑥",
+          "titre": "Coordination entre agences gouvernementales, chercheurs et communautés locales"
+        }
+      ]
+    },
+    "references": [
+      {
+        "num": "[1]",
+        "auteurs": "Hakkou R., Benzaazoua M., Bussière B.",
+        "annee": "2008",
+        "titre": "Acid Mine Drainage at the Abandoned Kettara Mine (Morocco): 1. Environmental Characterization.",
+        "revue": "Mine Water and Environment",
+        "details": "27, 145–159.",
+        "doi": "10.1007/s10230-008-0036-6",
+        "type": "article"
+      },
+      {
+        "num": "[2]",
+        "auteurs": "Essaifi A.",
+        "annee": "2011",
+        "titre": "L'ancienne mine de pyrrhotite de Kettara (Jebilet centrales). In : Michard A. et al. (Eds.), Nouveaux Guides Géologiques et Miniers du Maroc.",
+        "revue": "Notes et Mém. Serv. Géol. Maroc",
+        "details": "Vol. 9, pp. 205–209.",
+        "doi": null,
+        "type": "chapitre"
+      },
+      {
+        "num": "[3]",
+        "auteurs": "Cisse D. & Wafik A.",
+        "annee": "2026",
+        "titre": "Deformation-assisted fluid flow and massive sulfide evolution in a ductile shear zone: insights from the Kettara mining district.",
+        "revue": "EGU General Assembly 2026",
+        "details": "Vienne, 3–8 mai 2026.",
+        "doi": "10.5194/egusphere-egu26-1754",
+        "type": "conference"
+      },
+      {
+        "num": "[4]",
+        "auteurs": "Barkouch Y., Flata K., El Kherchi O., El Fadeli S., Pineau A.",
+        "annee": "2026",
+        "titre": "Assessment of Heavy Metal Pollution in Agricultural Soils around Abandoned Kettara Mine in Marrakech, Morocco.",
+        "revue": "JJEES — Jordan Journal of Earth and Environmental Sciences",
+        "details": "17(1): 1–6. Reçu mars 2025 · Accepté juin 2025.",
+        "doi": null,
+        "type": "article"
+      }
+    ],
+    "references_comp": [
+      {
+        "auteurs": "Hakkou R. et al.",
+        "annee": "2008",
+        "titre": "Acid Mine Drainage at the Abandoned Kettara Mine (Morocco): 2. Mine Waste Geochemical Behavior.",
+        "revue": "Mine Water and Environment",
+        "details": "27, 160–170.",
+        "doi": "10.1007/s10230-008-0037-5"
+      },
+      {
+        "auteurs": "El Khalil H. et al.",
+        "annee": "2007",
+        "titre": "Heavy metal contamination from mining sites in South Morocco.",
+        "revue": "Environmental Monitoring and Assessment",
+        "details": "",
+        "doi": null
+      },
+      {
+        "auteurs": "Huvelin P.",
+        "annee": "1977",
+        "titre": "Étude géologique et gîtologique du massif hercynien des Jebilet.",
+        "revue": "Notes Mém. Serv. Géol. Maroc",
+        "details": "232 bis.",
+        "doi": null
+      },
+      {
+        "auteurs": "Bernard A.J., Maier O.W., Mellal A.",
+        "annee": "1988",
+        "titre": "Aperçu sur les amas sulfurés massifs des Hercynides marocaines.",
+        "revue": "Mineralium Deposita",
+        "details": "23, 104–114.",
+        "doi": null
+      }
+    ],
+    "images": [
+      {
+        "src": "https://drive.google.com/thumbnail?id=19a2f9auAHhbTon_lk1QavFIc6Q0QZ9om&sz=w1200",
+        "label": "Vue panoramique de la mine de Kettara",
+        "sub": "Photo terrain — Jebilets centrales, Marrakech",
+        "type": "📸 Panoramique"
+      },
+      {
+        "src": "https://drive.google.com/thumbnail?id=1PGHGCkgobGz_f18MdQaDFUcDITD5TcWo&sz=w1200",
+        "label": "Géologie de la mine de Kettara",
+        "sub": "Carte géologique locale — Massif des Jebilets",
+        "type": "🗺️ Géologie"
+      },
+      {
+        "src": "https://drive.google.com/thumbnail?id=1oazs8r2Rx47QzGd4Z0u7FitKsKP_60QA&sz=w1200",
+        "label": "Structure du gisement de Kettara",
+        "sub": "Coupe verticale du corps minéralisé — d'après Essaifi & Hibti (2008)",
+        "type": "📐 Structure"
+      },
+      {
+        "src": "https://drive.google.com/thumbnail?id=1vR6v2IejyhXXxYnzYHxlXlnnAldejwJk&sz=w1200",
+        "label": "Vue aérienne de la mine de Kettara",
+        "sub": "KC : Kettara Centre — vue aérienne du site",
+        "type": "🛰️ Vue aérienne"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Imiter",
+    "region": "Drâa-Tafilalet",
+    "province": "Tinghir",
+    "structural_domain": "Anti-Atlas",
+    "latitude": 31.3454,
+    "longitude": -5.7316,
+    "status": "active",
+    "main_substance": "Argent (Ag)",
+    "other_substances": [
+      "Mercure (Hg)"
+    ],
+    "massif": "Anti-Atlas oriental (Jbel Saghro)",
+    "operateur": "Managem (SMI — Société Minière d'Imiter)",
+    "deposit_type": "Gisement filonien argentifère encaissé dans les formations précambriennes de l'Anti-Atlas oriental.",
+    "geological_description": "Gisement d'argent parmi les plus importants d'Afrique, situé dans le massif du Jbel Saghro.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 4,
+    "name": "Zgounder",
+    "region": "Souss-Massa",
+    "province": "Taroudant",
+    "structural_domain": "Anti-Atlas",
+    "latitude": 30.7623,
+    "longitude": -7.7424,
+    "status": "active",
+    "main_substance": "Argent (Ag)",
+    "other_substances": [
+      "Mercure (Hg)"
+    ],
+    "massif": "Anti-Atlas central (Massif du Siroua)",
+    "operateur": "Aya Gold & Silver",
+    "deposit_type": "Gisement argentifère encaissé dans les formations volcano-sédimentaires du massif du Siroua.",
+    "geological_description": "Une des plus anciennes mines d'argent du Maroc, en exploitation active.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 6,
+    "name": "Tighza",
+    "region": "Béni Mellal-Khénifra",
+    "province": "Mrirt",
+    "structural_domain": "Meseta",
+    "latitude": 33.1813,
+    "longitude": -5.6319,
+    "status": "active",
+    "main_substance": "Plomb (Pb)",
+    "other_substances": [
+      "Zinc (Zn)",
+      "Argent (Ag)",
+      "Or (Au)"
+    ],
+    "massif": "Maroc central (Massif hercynien)",
+    "operateur": "CMT (Compagnie Minière de Touissit)",
+    "deposit_type": "Gisement polymétallique Pb-Zn-Ag-Au encaissé dans le massif hercynien du Maroc central.",
+    "geological_description": "District minier polymétallique historique du Maroc central.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 7,
+    "name": "Drâa Sfar",
+    "region": "Marrakech-Safi",
+    "province": "Marrakech",
+    "structural_domain": "Meseta",
+    "latitude": 31.7103,
+    "longitude": -8.1352,
+    "status": "active",
+    "main_substance": "Plomb (Pb)",
+    "other_substances": [
+      "Zinc (Zn)",
+      "Cuivre (Cu)",
+      "Argent (Ag)"
+    ],
+    "massif": "Meseta occidentale (Jebilets centrales)",
+    "operateur": "Managem (CMG — Cie Minière de Guemassa)",
+    "deposit_type": "Amas sulfuré massif polymétallique Pb-Zn-Cu-Ag, encaissé dans les Jebilets centrales — même province métallogénique que Kettara.",
+    "geological_description": "Gisement actif voisin de Kettara, dans le même contexte géologique des Jebilets centrales.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 8,
+    "name": "Mibladen – Ahouli – Zaïda",
+    "region": "Drâa-Tafilalet",
+    "province": "Midelt",
+    "structural_domain": "Domaine Atlasique",
+    "latitude": 32.8105,
+    "longitude": -4.5933,
+    "status": "closed",
+    "main_substance": "Plomb (Pb)",
+    "other_substances": [
+      "Zinc (Zn)",
+      "Argent (Ag)"
+    ],
+    "massif": "Haut Atlas oriental (Haute-Moulouya)",
+    "operateur": "BRPM — ONHYM",
+    "rehabilitation": "Fermée depuis 1980",
+    "deposit_type": "Gisement filonien Pb-Zn-Ag encaissé dans les formations triasiques et jurassiques de la Haute-Moulouya.",
+    "geological_description": "Ancien district minier majeur du plomb au Maroc, fermé en 1980.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 9,
+    "name": "Sidi Bou Othmane",
+    "region": "Marrakech-Safi",
+    "province": "El Haouz",
+    "structural_domain": "Meseta",
+    "latitude": 31.8959,
+    "longitude": -7.9765,
+    "status": "closed",
+    "main_substance": "Plomb (Pb)",
+    "other_substances": [
+      "Zinc (Zn)",
+      "Cuivre (Cu)"
+    ],
+    "massif": "Meseta occidentale (Jebilets sud)",
+    "operateur": "CRAM",
+    "rehabilitation": "Fermée depuis 1980",
+    "deposit_type": "Gisement polymétallique Pb-Zn-Cu dans la partie sud des Jebilets.",
+    "geological_description": "Ancienne carrière phosphatée/polymétallique voisine de Kettara — ses stériles alcalins ont été proposés pour la réhabilitation de Kettara (Hakkou et al. 2008).",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 10,
+    "name": "Azegour",
+    "region": "Marrakech-Safi",
+    "province": "Al Haouz",
+    "structural_domain": "Domaine Atlasique",
+    "latitude": 31.149,
+    "longitude": -8.3023,
+    "status": "closed",
+    "main_substance": "Cuivre (Cu)",
+    "other_substances": [
+      "Molybdène (Mo)",
+      "Tungstène (W)"
+    ],
+    "massif": "Haut Atlas occidental (Anti-Atlas métasomatique)",
+    "operateur": "Office des Mines",
+    "rehabilitation": "Fermée depuis 1971",
+    "deposit_type": "Gisement skarn à Cu-Mo-W lié à une intrusion granitique dans le Haut Atlas occidental.",
+    "geological_description": "Gisement métasomatique de contact, historiquement exploité pour le cuivre, molybdène et tungstène.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  },
+  {
+    "id": 11,
+    "name": "Jerada",
+    "region": "Oriental",
+    "province": "Jerada",
+    "structural_domain": "Domaine Atlasique",
+    "latitude": 34.3044,
+    "longitude": -2.1975,
+    "status": "closed",
+    "main_substance": "Charbon (Anthracite)",
+    "other_substances": [],
+    "massif": "Maroc oriental (Hauts Plateaux)",
+    "operateur": "Société des Charbonnages du Maroc (CDM)",
+    "rehabilitation": "Fermée depuis 2001",
+    "deposit_type": "Bassin houiller du Maroc oriental, exploitation d'anthracite dans les Hauts Plateaux.",
+    "geological_description": "Ancien bassin charbonnier le plus important du Maroc, fermé en 2001.",
+    "mining_waste": "Données à compléter — voir bibliographie de thèse.",
+    "environmental_impacts": "Données à compléter — voir bibliographie de thèse.",
+    "treatment_methods": [
+      "Données à compléter"
+    ],
+    "references": "À compléter — voir bibliographie de thèse.",
+    "images": []
+  }
+]

@@ -1,0 +1,13 @@
+# QGIS lock files
+*.sr.lock
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Generated/output artifacts
+output/

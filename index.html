@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Morocco Mining WebGIS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/style.css"/>
+<meta name="description" content="Morocco Mining WebGIS — Plateforme nationale de visualisation et valorisation minière. Cartographie interactive des sites miniers actifs et fermés du Maroc, données géologiques, environnementales et de production."/>
+<meta property="og:title" content="Morocco Mining WebGIS"/>
+<meta property="og:description" content="Plateforme nationale de visualisation et valorisation minière du Maroc."/>
+<meta property="og:type" content="website"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' fill='%230d1b2a'/%3E%3Cpolygon points='15,3 27,9.5 27,21.5 15,28 3,21.5 3,9.5' stroke='%23f0c040' stroke-width='1.8' fill='none'/%3E%3Cpolygon points='15,9 21,12.5 21,19.5 15,23 9,19.5 9,12.5' fill='%23f0c040' opacity='.3'/%3E%3Ccircle cx='15' cy='15' r='3.2' fill='%23f0c040'/%3E%3C/svg%3E"/>
+<!--
+  Content-Security-Policy : désormais définie côté serveur via le fichier .htaccess
+  (plus fiable et plus complète qu'une balise <meta>, notamment pour frame-ancestors).
+  Voir le fichier .htaccess fourni séparément.
+-->
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     TOP BAR
+══════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 30 30" fill="none">
+        <polygon points="15,2 28,9.5 28,22 15,28 2,22 2,9.5" stroke="#f0c040" stroke-width="1.6" fill="none"/>
+        <polygon points="15,8 22,12 22,20 15,23 8,20 8,12" fill="#f0c040" opacity=".2"/>
+        <circle cx="15" cy="15" r="3.5" fill="#f0c040"/>
+      </svg>
+    </div>
+    <div>
+      <div class="topbar-title">Morocco Mining WebGIS</div>
+      <div class="topbar-subtitle">Plateforme de Visualisation et Valorisation Minière</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <!-- Basemap switcher -->
+    <div class="basemap-switcher">
+      <button class="bm-btn active" id="bm-satellite">🛰 Satellite</button>
+      <button class="bm-btn" id="bm-topo">🗺 Topographie</button>
+      <button class="bm-btn" id="bm-osm">🌍 Standard</button>
+    </div>
+    <span class="topbar-badge" id="topbar-count">Chargement…</span>
+    <button class="btn-info" id="btn-about" title="À propos de ce site">ℹ</button>
+  </div>
+</header>
+
+<!-- ══ MODAL À PROPOS ══ -->
+<div class="about-overlay" id="about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="about-modal">
+    <div class="about-header">
+      <div class="about-logo">
+        <svg viewBox="0 0 40 40" fill="none">
+          <polygon points="20,2 37,11.5 37,29.5 20,38 3,29.5 3,11.5" stroke="#f0c040" stroke-width="1.8" fill="none"/>
+          <polygon points="20,9 30,14.5 30,26 20,31 10,26 10,14.5" fill="#f0c040" opacity=".2"/>
+          <circle cx="20" cy="20" r="4.5" fill="#f0c040"/>
+        </svg>
+        <div>
+          <div class="about-header-title">Morocco Mining WebGIS</div>
+          <div class="about-header-sub">Plateforme Nationale de Visualisation et Valorisation Minière</div>
+        </div>
+      </div>
+      <button class="about-close" onclick="closeAbout()">✕</button>
+    </div>
+    <div class="about-body">
+      <div class="about-section-title">Objectif de la plateforme</div>
+      <p>
+        Morocco Mining WebGIS est une plateforme numérique nationale développée dans le cadre d'un projet de thèse doctorale.
+        Elle a pour objectif de centraliser, visualiser et analyser les données minières du Maroc à travers une interface cartographique interactive.
+      </p>
+      <p>
+        La plateforme permet de localiser les sites miniers historiques et actifs, d'accéder aux fiches scientifiques détaillées
+        de chaque mine, et de consulter les données géologiques, environnementales et de production issues de la littérature scientifique.
+      </p>
+
+      <div class="about-section-title">Contenu & données</div>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-card-title">🪨 Géologie</div>
+          <div class="about-card-text">Type de gisement, minéralogie, structure, genèse des corps minéralisés.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">⚗️ Géochimie</div>
+          <div class="about-card-text">Contamination en métaux lourds, indices de pollution, potentiel DMA.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">🏭 Production</div>
+          <div class="about-card-text">Historique d'exploitation, tonnages extraits, réserves et phases minières.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">🌿 Environnement</div>
+          <div class="about-card-text">Impacts sur les sols, eaux souterraines et communautés exposées.</div>
+        </div>
+      </div>
+
+      <div class="about-section-title">Légende des symboles</div>
+      <div class="about-legend">
+        <div class="about-legend-item">
+          <svg width="34" height="40" viewBox="0 0 44 52">
+            <circle cx="22" cy="21" r="19" fill="#eafaf1" stroke="#1a7a45" stroke-width="2.2"/>
+            <path d="M8 21 Q8 7 22 6 Q36 7 36 21 Z" fill="#1a7a45"/>
+            <rect x="6" y="20" width="32" height="4.5" rx="2.2" fill="#1a7a45"/>
+            <rect x="14" y="12" width="16" height="11" rx="2" fill="#eafaf1" opacity=".85"/>
+            <path d="M13 12 Q18 8 26 10" stroke="#eafaf1" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+            <polygon points="22,42 15,31 29,31" fill="#1a7a45"/>
+          </svg>
+          Mine active (en exploitation)
+        </div>
+        <div class="about-legend-item">
+          <svg width="34" height="40" viewBox="0 0 44 52">
+            <circle cx="22" cy="21" r="19" fill="#fdf0ef" stroke="#c0392b" stroke-width="2.2"/>
+            <path d="M8 21 Q8 7 22 6 Q36 7 36 21 Z" fill="#c0392b"/>
+            <rect x="6" y="20" width="32" height="4.5" rx="2.2" fill="#c0392b"/>
+            <rect x="14" y="12" width="16" height="11" rx="2" fill="#fdf0ef" opacity=".85"/>
+            <path d="M13 12 Q18 8 26 10" stroke="#fdf0ef" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+            <polygon points="22,42 15,31 29,31" fill="#c0392b"/>
+          </svg>
+          Mine fermée ou abandonnée
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid #dde1e8;text-align:center;">
+        <div style="font-size:12pt;font-weight:700;color:#1a1f2e;font-family:'Times New Roman',Times,serif;margin-bottom:4px;">
+          IMAD SEFRITI
+        </div>
+        <div style="font-size:10.5pt;color:#718096;">
+          Développé dans le cadre d'une thèse doctorale · Université Cadi Ayyad, Marrakech · 2026
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAP
+══════════════════════════════════════════ -->
+<div id="map"></div>
+
+<!-- ══════════════════════════════════════════
+     LEFT PANEL
+══════════════════════════════════════════ -->
+<div class="left-panel">
+
+  <!-- Search -->
+  <div class="lp-search">
+    <input type="text" id="search-input" placeholder="Rechercher une mine…" autocomplete="off"/>
+    <button id="search-btn" aria-label="Rechercher">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="2"/>
+        <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="lp-results" id="lp-results" hidden></div>
+
+  <!-- Scrollable layers -->
+  <div class="lp-scroll">
+
+    <!-- Mines group -->
+    <div class="lp-group">
+      <div class="lp-group-header" data-target="grp-mines">
+        <span class="lp-group-title">Mines</span>
+        <span class="lp-chevron" id="chev-mines">▲</span>
+      </div>
+      <div class="lp-group-body" id="grp-mines">
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-active" checked/>
+          <span class="lp-pin active"></span>
+          Mines Actives
+        </label>
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-inactive" checked/>
+          <span class="lp-pin closed"></span>
+          Mines Fermées / Abandonnées
+        </label>
+      </div>
+    </div>
+
+    <!-- Couches complémentaires -->
+    <div class="lp-group">
+      <div class="lp-group-header" data-target="grp-layers">
+        <span class="lp-group-title">Couches</span>
+        <span class="lp-chevron" id="chev-layers">▲</span>
+      </div>
+      <div class="lp-group-body" id="grp-layers">
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-regions"/>
+          <span class="lp-swatch" style="background:rgba(48,201,176,.25);border-color:#30c9b0;"></span>
+          Régions administratives
+        </label>
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-provinces"/>
+          <span class="lp-swatch" style="background:rgba(199,125,255,.25);border-color:#c77dff;"></span>
+          Provinces / Préfectures
+        </label>
+      </div>
+    </div>
+
+    <!-- Filtre statut -->
+    <div class="lp-group">
+      <div class="lp-group-header" data-target="grp-filter">
+        <span class="lp-group-title">Filtres</span>
+        <span class="lp-chevron" id="chev-filter">▲</span>
+      </div>
+      <div class="lp-group-body" id="grp-filter">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Substance</label>
+          <select id="filter-sub" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:.78rem;padding:5px 8px;outline:none;cursor:pointer;">
+            <option value="">Toutes les substances</option>
+            <option value="Soufre">Soufre</option>
+            <option value="Cobalt">Cobalt</option>
+            <option value="Plomb">Plomb</option>
+            <option value="Zinc">Zinc</option>
+            <option value="Or">Or</option>
+            <option value="Argent">Argent</option>
+            <option value="Cuivre">Cuivre</option>
+            <option value="Manganèse">Manganèse</option>
+            <option value="Phosphate">Phosphate</option>
+            <option value="Nickel">Nickel</option>
+            <option value="Mercure">Mercure</option>
+            <option value="Molybdène">Molybdène</option>
+            <option value="Tungstène">Tungstène</option>
+            <option value="Charbon">Charbon</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lp-scroll -->
+
+  <!-- Stats -->
+  <div class="lp-stats">
+    <div class="lp-stat"><span id="s-total">–</span><small>Total</small></div>
+    <div class="lp-stat"><span id="s-active">–</span><small>Actives</small></div>
+    <div class="lp-stat"><span id="s-closed">–</span><small>Fermées</small></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RIGHT PANEL
+══════════════════════════════════════════ -->
+<div class="right-panel">
+  <div class="rp-title">Légende</div>
+
+  <div class="rp-section">Statut des mines</div>
+  <div class="rp-item"><span class="rp-pin active"></span>Mines Actives</div>
+  <div class="rp-item"><span class="rp-pin closed"></span>Mines Fermées / Abandonnées</div>
+
+  <div class="rp-divider"></div>
+  <div class="rp-section">Substances</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#3d6b9e">Co</span>Cobalt</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#7a7a7a">Pb</span>Plomb / Zinc</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#b59a2a">Au</span>Or</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#7a9e5a">Cu</span>Cuivre</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#6b4e9e">Mn</span>Manganèse</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#4e7e8e">P</span>Phosphate</div>
+
+  <div class="rp-divider"></div>
+  <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;">
+    Fond : ESRI World Imagery<br/>
+    Carte : Leaflet 1.9.4<br/>
+    © OpenStreetMap contributors
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     POPUP CARD
+══════════════════════════════════════════ -->
+<div class="mine-popup" id="mine-popup" hidden>
+  <button class="popup-close" id="popup-close">✕</button>
+  <div class="popup-body" id="popup-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"
+  integrity="sha384-aBc0BOllaGWrQx51DYt978St/L7B+21jzNGc4N/jnGD0NxGwj8S/ftRgW0AkXIak" crossorigin="anonymous"></script>
+<script src="js/app.js"></script>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightboxBtn()">✕</button>
+  <button class="lightbox-nav prev" onclick="lightboxNav(-1,event)">‹</button>
+  <button class="lightbox-nav next" onclick="lightboxNav(+1,event)">›</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lightbox-caption" id="lb-caption"></div>
+  <div class="lightbox-sub"    id="lb-sub"></div>
+  <div class="lightbox-counter" id="lb-counter"></div>
+</div>
+
+</body>
+</html>
