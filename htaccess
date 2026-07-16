@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════════════════
+#  Morocco Mining WebGIS — Configuration sécurité Apache
+#  À placer à la RACINE de votre hébergement (même dossier qu'index.html)
+# ══════════════════════════════════════════════════════════
+
+# ── Forcer HTTPS (redirige automatiquement http:// vers https://) ──
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ── En-têtes de sécurité HTTP ──
+<IfModule mod_headers.c>
+  # Empêche le site d'être affiché dans un <iframe> sur un autre site (anti-clickjacking)
+  Header always set X-Frame-Options "DENY"
+
+  # Empêche le navigateur de "deviner" le type d'un fichier (anti-MIME-sniffing)
+  Header always set X-Content-Type-Options "nosniff"
+
+  # Limite les informations envoyées dans l'en-tête Referer vers d'autres sites
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Désactive l'accès à des fonctionnalités navigateur non utilisées par le site
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # Force HTTPS pendant 1 an, y compris pour les sous-domaines (HSTS)
+  # ⚠️ N'activez cette ligne qu'une fois certain que le HTTPS fonctionne parfaitement
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Content-Security-Policy — version serveur (plus fiable que la balise <meta> dans le HTML)
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://drive.google.com https://*.tile.openstreetmap.org https://*.tile.opentopomap.org https://server.arcgisonline.com https://services.arcgisonline.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+</IfModule>
+
+# ── Désactiver l'affichage du contenu des dossiers (anti-exploration) ──
+Options -Indexes
+
+# ── Désactiver l'affichage des erreurs serveur détaillées (si jamais du PHP est ajouté plus tard) ──
+<IfModule mod_php.c>
+  php_flag display_errors off
+</IfModule>
+
+# ── Compression Gzip (site plus rapide à charger) ──
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json
+</IfModule>
+
+# ── Mise en cache des ressources statiques (site plus rapide au 2e visite) ──
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 1 hour"
+  ExpiresByType image/svg+xml "access plus 1 week"
+  ExpiresByType image/png "access plus 1 week"
+  ExpiresByType image/jpeg "access plus 1 week"
+</IfModule>

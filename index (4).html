@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Morocco Mining WebGIS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<meta name="description" content="Morocco Mining WebGIS — Plateforme nationale de visualisation et valorisation minière. Cartographie interactive des sites miniers actifs et fermés du Maroc, données géologiques, environnementales et de production."/>
+<meta property="og:title" content="Morocco Mining WebGIS"/>
+<meta property="og:description" content="Plateforme nationale de visualisation et valorisation minière du Maroc."/>
+<meta property="og:type" content="website"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect width='30' height='30' fill='%230d1b2a'/%3E%3Cpolygon points='15,3 27,9.5 27,21.5 15,28 3,21.5 3,9.5' stroke='%23f0c040' stroke-width='1.8' fill='none'/%3E%3Cpolygon points='15,9 21,12.5 21,19.5 15,23 9,19.5 9,12.5' fill='%23f0c040' opacity='.3'/%3E%3Ccircle cx='15' cy='15' r='3.2' fill='%23f0c040'/%3E%3C/svg%3E"/>
+<!--
+  Content-Security-Policy : désormais définie côté serveur via le fichier .htaccess
+  (plus fiable et plus complète qu'une balise <meta>, notamment pour frame-ancestors).
+  Voir le fichier .htaccess fourni séparément.
+-->
+<style>
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --topbar-h:   54px;
+  --topbar-bg:  #0d1b2a;
+  --panel-bg:   rgba(13, 27, 42, 0.92);
+  --panel-br:   8px;
+  --panel-sh:   0 4px 24px rgba(0,0,0,.5);
+  --accent:     #f0c040;
+  --teal:       #30c9b0;
+  --text-light: #e8edf3;
+  --text-muted: #8fa3b8;
+  --border:     rgba(255,255,255,0.12);
+
+  --pin-active:    #2ecc71;
+  --pin-closed:    #e74c3c;
+  --pin-abandoned: #e74c3c;
+
+  --dom-rif:    #6b8f71;
+  --dom-meseta: #8b7355;
+  --dom-atlas:  #b5762a;
+  --dom-anti:   #c4703f;
+  --dom-sahara: #d4a853;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  background: #0d1b2a;
+}
+
+/* ══════════════════════════════════════════
+   TOP BAR
+══════════════════════════════════════════ */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: var(--topbar-bg);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  z-index: 2000;
+  box-shadow: 0 2px 20px rgba(0,0,0,.6);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.topbar-logo svg { width: 30px; height: 30px; flex-shrink: 0; }
+
+.topbar-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.topbar-subtitle {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-top: 1px;
+}
+
+.topbar-badge {
+  background: rgba(240,192,64,.15);
+  border: 1px solid rgba(240,192,64,.4);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* Basemap switcher */
+.basemap-switcher {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.bm-btn {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.65);
+  font-size: 0.7rem;
+  font-family: 'Inter', sans-serif;
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.03em;
+}
+.bm-btn:hover { background: rgba(255,255,255,.13); color: #fff; }
+.bm-btn.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════
+   MAP — fills everything below topbar
+══════════════════════════════════════════ */
+#map {
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════
+   LEFT PANEL
+══════════════════════════════════════════ */
+.left-panel {
+  position: fixed;
+  top: calc(var(--topbar-h) + 12px);
+  left: 12px;
+  width: 240px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-br);
+  box-shadow: var(--panel-sh);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100vh - var(--topbar-h) - 24px);
+}
+
+/* Search */
+.lp-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+}
+.lp-search input {
+  flex: 1;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 5px;
+  padding: 6px 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: #fff;
+  outline: none;
+  transition: border .15s;
+}
+.lp-search input::placeholder { color: rgba(255,255,255,.35); }
+.lp-search input:focus { border-color: var(--teal); }
+.lp-search button {
+  background: var(--teal);
+  border: none;
+  border-radius: 5px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.lp-search button svg { width: 14px; height: 14px; }
+
+/* Search results */
+.lp-results {
+  background: rgba(10,20,35,.96);
+  border-bottom: 1px solid var(--border);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.lp-result-item {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .1s;
+}
+.lp-result-item:hover { background: rgba(48,201,176,.1); }
+.lp-result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lp-result-name { font-size: 0.82rem; font-weight: 600; color: #fff; }
+.lp-result-sub  { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+.lp-no-result   { padding: 10px 12px; font-size: 0.78rem; color: var(--text-muted); }
+
+/* Layer groups */
+.lp-scroll { overflow-y: auto; flex: 1; }
+
+.lp-group { border-bottom: 1px solid var(--border); }
+
+.lp-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s;
+}
+.lp-group-header:hover { background: rgba(255,255,255,.05); }
+
+.lp-group-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.lp-chevron { color: var(--text-muted); font-size: 0.65rem; transition: transform .2s; }
+.lp-chevron.shut { transform: rotate(180deg); }
+
+.lp-group-body { padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 7px; }
+.lp-group-body.hidden { display: none; }
+
+.lp-layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.79rem;
+  color: var(--text-light);
+  user-select: none;
+}
+.lp-layer input[type="checkbox"] {
+  accent-color: var(--teal);
+  width: 14px; height: 14px;
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* Pin icons */
+.lp-pin { width: 14px; height: 20px; flex-shrink: 0; background-size: contain; background-repeat: no-repeat; background-position: center; display: inline-block; }
+.lp-pin.active   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 42'%3E%3Cpath d='M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26S32 28 32 16C32 7.2 24.8 0 16 0z' fill='%232ecc71'/%3E%3Ccircle cx='16' cy='16' r='7' fill='white'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%232ecc71'/%3E%3C/svg%3E"); }
+.lp-pin.closed   { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 42'%3E%3Cpath d='M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26S32 28 32 16C32 7.2 24.8 0 16 0z' fill='%23e74c3c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='white'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23e74c3c'/%3E%3C/svg%3E"); }
+
+.lp-swatch { width: 26px; height: 10px; border-radius: 2px; flex-shrink: 0; display: inline-block; border: 1px solid rgba(255,255,255,.15); }
+.lp-dot    { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; display: inline-block; }
+
+.lp-domain-list { display: flex; flex-direction: column; gap: 5px; padding-left: 22px; margin-top: 3px; }
+.lp-domain-list span { display: flex; align-items: center; gap: 7px; font-size: 0.74rem; color: var(--text-muted); }
+
+/* Stats bar */
+.lp-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 6px;
+  background: rgba(0,0,0,.3);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.lp-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.lp-stat span { font-family: 'Rajdhani', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--accent); line-height: 1; }
+.lp-stat small { font-size: 0.62rem; color: var(--text-muted); letter-spacing: 0.04em; }
+
+/* ══════════════════════════════════════════
+   RIGHT PANEL — Legend
+══════════════════════════════════════════ */
+.right-panel {
+  position: fixed;
+  top: calc(var(--topbar-h) + 12px);
+  right: 12px;
+  width: 205px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--panel-br);
+  box-shadow: var(--panel-sh);
+  z-index: 1000;
+  padding: 14px;
+  max-height: calc(100vh - var(--topbar-h) - 24px);
+  overflow-y: auto;
+}
+
+.rp-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(240,192,64,.3);
+}
+
+.rp-section { font-size: 0.63rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 10px 0 6px; }
+
+.rp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.77rem;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.rp-pin { width: 12px; height: 18px; flex-shrink: 0; background-size: contain; background-repeat: no-repeat; background-position: center; display: inline-block; }
+.rp-pin.active { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 42'%3E%3Cpath d='M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26S32 28 32 16C32 7.2 24.8 0 16 0z' fill='%232ecc71'/%3E%3Ccircle cx='16' cy='16' r='7' fill='white'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%232ecc71'/%3E%3C/svg%3E"); }
+.rp-pin.closed { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 42'%3E%3Cpath d='M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26S32 28 32 16C32 7.2 24.8 0 16 0z' fill='%23e74c3c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='white'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23e74c3c'/%3E%3C/svg%3E"); }
+
+.rp-swatch { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; display: inline-block; }
+.rp-chip { width: 22px; height: 15px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+.rp-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+/* ══════════════════════════════════════════
+   POPUP CARD
+══════════════════════════════════════════ */
+.mine-popup {
+  --pp-bg:#ffffff; --pp-bg2:#f7f8fa; --pp-bg3:#eef0f4;
+  --pp-border:#dde1e8; --pp-text:#1a1f2e; --pp-text2:#4a5568; --pp-text3:#718096;
+  --pp-green:#1a7a45; --pp-green-bg:#eafaf1; --pp-green-bd:#a8d5bc;
+  --pp-red:#c0392b;   --pp-red-bg:#fdf0ef;   --pp-red-bd:#e8b4b0;
+  position:fixed; top:var(--topbar-h); left:0; right:0; bottom:0;
+  width:100vw; height:calc(100vh - var(--topbar-h)); max-height:none;
+  overflow-y:auto; background:#ffffff;
+  border:none; border-top:3px solid #1a7a45; border-radius:0;
+  box-shadow:0 -4px 24px rgba(0,0,0,.1);
+  z-index:1500; animation:fsIn .25s ease;
+  font-family:'Times New Roman',Times,serif;
+  font-size:12pt;
+}
+@keyframes fsIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* Grilles */
+.fs-l4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin:0 0 18px}
+.fs-l3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:0 0 18px}
+.fs-l2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 18px}
+.fs-lf{margin:0 0 18px}
+
+/* Carte */
+.fsc{background:#f7f8fa;border:1px solid #dde1e8;border-radius:10px;padding:14px 18px}
+
+/* Titre vert */
+.fsct{font-size:14pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:#1a7a45;border-bottom:2px solid #d4edda;padding-bottom:6px;margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;font-family:'Times New Roman',Times,serif;}
+.fsct::before{content:'';display:inline-block;width:3px;height:14px;
+  background:#1a7a45;border-radius:2px;flex-shrink:0}
+
+/* Titre rouge */
+.fsct-red{font-size:14pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:#c0392b;border-bottom:2px solid #fde8e6;padding-bottom:6px;margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;font-family:'Times New Roman',Times,serif;}
+.fsct-red::before{content:'';display:inline-block;width:3px;height:14px;
+  background:#c0392b;border-radius:2px;flex-shrink:0}
+
+/* Fermer */
+.popup-close{position:fixed;top:calc(var(--topbar-h) + 12px);right:18px;margin:0;
+  background:#fff;border:1.5px solid #dde1e8;width:32px;height:32px;border-radius:50%;
+  cursor:pointer;font-size:.8rem;color:#4a5568;transition:all .15s;
+  z-index:1600;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.popup-close:hover{background:#c0392b;color:#fff;border-color:#c0392b}
+
+/* Corps */
+.popup-body{padding:20px 36px 40px}
+
+/* Header sticky */
+.popup-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;
+  padding:16px 36px 14px;background:#fff;border-bottom:2px solid #dde1e8;
+  position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
+.popup-pin{width:40px;height:46px;flex-shrink:0;background-size:contain;background-repeat:no-repeat;margin-top:2px}
+.popup-pin.active{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 52'%3E%3Ccircle cx='22' cy='21' r='19' fill='%23eafaf1' stroke='%231a7a45' stroke-width='2.2'/%3E%3Cpath d='M8 21 Q8 7 22 6 Q36 7 36 21 Z' fill='%231a7a45'/%3E%3Crect x='6' y='20' width='32' height='4.5' rx='2.2' fill='%231a7a45'/%3E%3Crect x='14' y='12' width='16' height='11' rx='2' fill='%23eafaf1' opacity='.85'/%3E%3Cpath d='M13 12 Q18 8 26 10' stroke='%23eafaf1' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Cpolygon points='22,42 15,31 29,31' fill='%231a7a45'/%3E%3C/svg%3E")}
+.popup-pin.closed{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 52'%3E%3Ccircle cx='22' cy='21' r='19' fill='%23fdf0ef' stroke='%23c0392b' stroke-width='2.2'/%3E%3Cpath d='M8 21 Q8 7 22 6 Q36 7 36 21 Z' fill='%23c0392b'/%3E%3Crect x='6' y='20' width='32' height='4.5' rx='2.2' fill='%23c0392b'/%3E%3Crect x='14' y='12' width='16' height='11' rx='2' fill='%23fdf0ef' opacity='.85'/%3E%3Cpath d='M13 12 Q18 8 26 10' stroke='%23fdf0ef' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E%3Cpolygon points='22,42 15,31 29,31' fill='%23c0392b'/%3E%3C/svg%3E")}
+
+/* Nom mine */
+.popup-mine-name{font-family:'Times New Roman',Times,serif;font-size:2.1rem;font-weight:700;color:#1a1f2e;line-height:1.1;}
+
+/* Tags */
+.popup-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.popup-tag{padding:3px 11px;border-radius:20px;font-size:.7rem;font-weight:600;letter-spacing:.04em}
+.popup-tag.domain{background:#e8f4fd;color:#1a5fa8;border:1px solid #b8d8f0}
+.popup-tag.status-active{background:#eafaf1;color:#1a7a45;border:1px solid #a8d5bc}
+.popup-tag.status-closed{background:#fdf0ef;color:#c0392b;border:1px solid #e8b4b0}
+.popup-tag.status-abandoned{background:#fdf0ef;color:#c0392b;border:1px solid #e8b4b0}
+
+/* Grille champs */
+.popup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 16px;margin-bottom:12px}
+.popup-field label{display:block;font-size:12pt;font-weight:800;letter-spacing:.04em;
+  text-transform:uppercase;color:#1a56a8;margin-bottom:5px;font-family:'Times New Roman',Times,serif;}
+.popup-field span{font-size:12pt;color:#1a1f2e;font-weight:400;line-height:1.5;font-family:'Times New Roman',Times,serif;}
+
+/* Coords */
+.popup-coords{display:inline-flex;align-items:center;gap:6px;font-family:'Courier New',monospace;
+  font-size:12pt;background:#eafaf1;border:1px solid #a8d5bc;border-radius:6px;font-family:'Times New Roman',Times,serif;
+  padding:5px 12px;color:#1a7a45;margin-bottom:16px;font-weight:600}
+
+/* Substances */
+.popup-subs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.sub-main{padding:5px 16px;border-radius:20px;font-size:12pt;font-weight:700;background:#1a7a45;color:#fff;font-family:'Times New Roman',Times,serif;}
+.sub-other{padding:5px 16px;border-radius:20px;font-size:12pt;font-weight:500;
+  background:#fff;color:#4a5568;border:1.5px solid #dde1e8}
+
+/* Sections */
+.popup-section{margin-bottom:14px}
+.popup-section-title{font-size:14pt;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:#1a7a45;border-bottom:2px solid #eafaf1;padding-bottom:4px;margin-bottom:8px;font-family:'Times New Roman',Times,serif;}
+.popup-section p{font-size:12pt;line-height:1.5;color:#4a5568;font-family:'Times New Roman',Times,serif;}
+.popup-section ul{padding-left:18px;font-size:12pt;line-height:1.5;color:#4a5568;font-family:'Times New Roman',Times,serif;}
+.popup-section li{margin-bottom:4px}
+
+/* Tables */
+.mine-popup table th{background:#eef0f4!important;color:#1a7a45!important;
+  font-size:14pt!important;font-weight:700!important;letter-spacing:.04em!important;
+  font-family:'Times New Roman',Times,serif!important;
+  padding:9px 12px!important;border-bottom:2px solid #d4edda!important;text-align:left!important}
+.mine-popup table td{padding:8px 12px!important;font-size:12pt!important;
+  color:#1a1f2e!important;border-bottom:1px solid #dde1e8!important;vertical-align:middle!important;
+  font-family:'Times New Roman',Times,serif!important;}
+.mine-popup table tr:last-child td{border-bottom:none!important}
+.mine-popup table tr:nth-child(even) td{background:#f7f8fa!important}
+
+/* Télécharger */
+.popup-dl{display:inline-flex;align-items:center;gap:6px;color:#1a7a45;font-size:12pt;font-family:'Times New Roman',Times,serif;
+  font-weight:600;cursor:pointer;margin-top:12px;padding:7px 16px;
+  background:#eafaf1;border:1.5px solid #a8d5bc;border-radius:8px;transition:all .15s}
+.popup-dl:hover{background:#1a7a45;color:#fff}
+
+
+/* ══════════════════════════════════════════
+   LEAFLET OVERRIDES
+══════════════════════════════════════════ */
+.leaflet-control-zoom a {
+  background: rgba(13,27,42,.9) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.15) !important;
+}
+.leaflet-control-zoom a:hover { background: var(--teal) !important; }
+
+.leaflet-control-attribution {
+  background: rgba(0,0,0,.5) !important;
+  color: rgba(255,255,255,.5) !important;
+  font-size: 0.6rem !important;
+}
+.leaflet-control-attribution a { color: rgba(255,255,255,.6) !important; }
+
+/* mine tooltip */
+.mine-tip {
+  background: rgba(10,20,35,.95) !important;
+  border: 1px solid rgba(48,201,176,.35) !important;
+  color: #fff !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+  white-space: nowrap;
+}
+.mine-tip::before { display: none; }
+
+/* ── Label permanent nom de mine ── */
+.mine-label {
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 5px rgba(0,0,0,.18) !important;
+  color: #1a1f2e !important;
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+.mine-label::before { display: none !important; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 800px) {
+  .topbar-title   { font-size: 0.8rem; }
+  .topbar-subtitle, .topbar-badge, .basemap-switcher { display: none; }
+  .right-panel    { display: none; }
+  .left-panel     { width: 210px; }
+  .mine-popup     { left: 8px; right: 8px; transform: none; width: auto; }
+}
+
+/* ═══════════════════════════════════════
+   GALERIE D'IMAGES — FICHE MINE
+═══════════════════════════════════════ */
+.img-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 0 0 18px;
+}
+.img-card {
+  background: #f7f8fa;
+  border: 1px solid #dde1e8;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+}
+.img-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+.img-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  background: #eef0f4;
+}
+.img-card-lbl {
+  padding: 8px 12px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: #1a1f2e;
+  border-top: 1px solid #dde1e8;
+  background: #fff;
+  text-align: center;
+  letter-spacing: .02em;
+}
+.img-card-type {
+  font-size: .6rem;
+  color: #1a7a45;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 2px;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.92);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 20px;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+.lightbox-caption {
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 600;
+  margin-top: 14px;
+  text-align: center;
+}
+.lightbox-sub {
+  color: #a0aec0;
+  font-size: .78rem;
+  margin-top: 4px;
+  text-align: center;
+}
+.lightbox-close {
+  position: fixed;
+  top: 20px; right: 24px;
+  background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.3);
+  color: #fff; font-size: 1.1rem;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.lightbox-close:hover { background: #c0392b; border-color: #c0392b; }
+.lightbox-nav {
+  position: fixed;
+  top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.12);
+  border: 1.5px solid rgba(255,255,255,.25);
+  color: #fff; font-size: 1.3rem;
+  width: 44px; height: 44px;
+  border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.lightbox-nav:hover { background: rgba(255,255,255,.25); }
+.lightbox-nav.prev { left: 20px; }
+.lightbox-nav.next { right: 20px; }
+.lightbox-counter {
+  position: fixed;
+  bottom: 24px;
+  color: rgba(255,255,255,.6);
+  font-size: .8rem;
+}
+
+
+/* ── Bouton Info topbar ── */
+.btn-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: 1.5px solid rgba(255,255,255,.25);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.btn-info:hover { background: var(--teal); border-color: var(--teal); }
+
+/* ── Modal À propos ── */
+.about-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,12,22,.72);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.about-overlay.open { display: flex; }
+.about-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+  max-width: 680px;
+  width: 100%;
+  overflow: hidden;
+  animation: fsIn .25s ease;
+}
+.about-header {
+  background: #0d1b2a;
+  padding: 22px 28px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.about-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.about-logo svg { width: 42px; height: 42px; flex-shrink: 0; }
+.about-header-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.about-header-sub {
+  font-size: .82rem;
+  color: #a0aec0;
+  margin-top: 4px;
+  font-family: 'Times New Roman', Times, serif;
+}
+.about-close {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff; font-size: .9rem;
+  width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
+  transition: background .15s;
+}
+.about-close:hover { background: #c0392b; }
+.about-body {
+  padding: 24px 28px 28px;
+  font-family: 'Times New Roman', Times, serif;
+}
+.about-section-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #1a7a45;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #d4edda;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.about-section-title::before {
+  content: '';
+  width: 4px; height: 16px;
+  background: #1a7a45;
+  border-radius: 2px;
+  display: inline-block;
+}
+.about-body p {
+  font-size: 12pt;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0 0 12px;
+  text-align: justify;
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
+}
+.about-card {
+  background: #f7f8fa;
+  border: 1px solid #dde1e8;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.about-card-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #1a56a8;
+  margin-bottom: 4px;
+}
+.about-card-text {
+  font-size: 11pt;
+  color: #4a5568;
+  line-height: 1.45;
+}
+.about-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.about-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11pt;
+  color: #1a1f2e;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     TOP BAR
+══════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 30 30" fill="none">
+        <polygon points="15,2 28,9.5 28,22 15,28 2,22 2,9.5" stroke="#f0c040" stroke-width="1.6" fill="none"/>
+        <polygon points="15,8 22,12 22,20 15,23 8,20 8,12" fill="#f0c040" opacity=".2"/>
+        <circle cx="15" cy="15" r="3.5" fill="#f0c040"/>
+      </svg>
+    </div>
+    <div>
+      <div class="topbar-title">Morocco Mining WebGIS</div>
+      <div class="topbar-subtitle">Plateforme de Visualisation et Valorisation Minière</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <!-- Basemap switcher -->
+    <div class="basemap-switcher">
+      <button class="bm-btn active" id="bm-satellite">🛰 Satellite</button>
+      <button class="bm-btn" id="bm-topo">🗺 Topographie</button>
+      <button class="bm-btn" id="bm-osm">🌍 Standard</button>
+    </div>
+    <span class="topbar-badge" id="topbar-count">1 site indexé</span>
+    <button class="btn-info" id="btn-about" title="À propos de ce site">ℹ</button>
+  </div>
+</header>
+
+<!-- ══ MODAL À PROPOS ══ -->
+<div class="about-overlay" id="about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="about-modal">
+    <div class="about-header">
+      <div class="about-logo">
+        <svg viewBox="0 0 40 40" fill="none">
+          <polygon points="20,2 37,11.5 37,29.5 20,38 3,29.5 3,11.5" stroke="#f0c040" stroke-width="1.8" fill="none"/>
+          <polygon points="20,9 30,14.5 30,26 20,31 10,26 10,14.5" fill="#f0c040" opacity=".2"/>
+          <circle cx="20" cy="20" r="4.5" fill="#f0c040"/>
+        </svg>
+        <div>
+          <div class="about-header-title">Morocco Mining WebGIS</div>
+          <div class="about-header-sub">Plateforme Nationale de Visualisation et Valorisation Minière</div>
+        </div>
+      </div>
+      <button class="about-close" onclick="closeAbout()">✕</button>
+    </div>
+    <div class="about-body">
+      <div class="about-section-title">Objectif de la plateforme</div>
+      <p>
+        Morocco Mining WebGIS est une plateforme numérique nationale développée dans le cadre d'un projet de thèse doctorale.
+        Elle a pour objectif de centraliser, visualiser et analyser les données minières du Maroc à travers une interface cartographique interactive.
+      </p>
+      <p>
+        La plateforme permet de localiser les sites miniers historiques et actifs, d'accéder aux fiches scientifiques détaillées
+        de chaque mine, et de consulter les données géologiques, environnementales et de production issues de la littérature scientifique.
+      </p>
+
+      <div class="about-section-title">Contenu & données</div>
+      <div class="about-grid">
+        <div class="about-card">
+          <div class="about-card-title">🪨 Géologie</div>
+          <div class="about-card-text">Type de gisement, minéralogie, structure, genèse des corps minéralisés.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">⚗️ Géochimie</div>
+          <div class="about-card-text">Contamination en métaux lourds, indices de pollution, potentiel DMA.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">🏭 Production</div>
+          <div class="about-card-text">Historique d'exploitation, tonnages extraits, réserves et phases minières.</div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-title">🌿 Environnement</div>
+          <div class="about-card-text">Impacts sur les sols, eaux souterraines et communautés exposées.</div>
+        </div>
+      </div>
+
+      <div class="about-section-title">Légende des symboles</div>
+      <div class="about-legend">
+        <div class="about-legend-item">
+          <svg width="34" height="40" viewBox="0 0 44 52">
+            <circle cx="22" cy="21" r="19" fill="#eafaf1" stroke="#1a7a45" stroke-width="2.2"/>
+            <path d="M8 21 Q8 7 22 6 Q36 7 36 21 Z" fill="#1a7a45"/>
+            <rect x="6" y="20" width="32" height="4.5" rx="2.2" fill="#1a7a45"/>
+            <rect x="14" y="12" width="16" height="11" rx="2" fill="#eafaf1" opacity=".85"/>
+            <path d="M13 12 Q18 8 26 10" stroke="#eafaf1" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+            <polygon points="22,42 15,31 29,31" fill="#1a7a45"/>
+          </svg>
+          Mine active (en exploitation)
+        </div>
+        <div class="about-legend-item">
+          <svg width="34" height="40" viewBox="0 0 44 52">
+            <circle cx="22" cy="21" r="19" fill="#fdf0ef" stroke="#c0392b" stroke-width="2.2"/>
+            <path d="M8 21 Q8 7 22 6 Q36 7 36 21 Z" fill="#c0392b"/>
+            <rect x="6" y="20" width="32" height="4.5" rx="2.2" fill="#c0392b"/>
+            <rect x="14" y="12" width="16" height="11" rx="2" fill="#fdf0ef" opacity=".85"/>
+            <path d="M13 12 Q18 8 26 10" stroke="#fdf0ef" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+            <polygon points="22,42 15,31 29,31" fill="#c0392b"/>
+          </svg>
+          Mine fermée ou abandonnée
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid #dde1e8;text-align:center;">
+        <div style="font-size:12pt;font-weight:700;color:#1a1f2e;font-family:'Times New Roman',Times,serif;margin-bottom:4px;">
+          IMAD SEFRITI
+        </div>
+        <div style="font-size:10.5pt;color:#718096;">
+          Développé dans le cadre d'une thèse doctorale · Université Cadi Ayyad, Marrakech · 2026
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAP
+══════════════════════════════════════════ -->
+<div id="map"></div>
+
+<!-- ══════════════════════════════════════════
+     LEFT PANEL
+══════════════════════════════════════════ -->
+<div class="left-panel">
+
+  <!-- Search -->
+  <div class="lp-search">
+    <input type="text" id="search-input" placeholder="Rechercher une mine…" autocomplete="off"/>
+    <button id="search-btn" aria-label="Rechercher">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="2"/>
+        <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="lp-results" id="lp-results" hidden></div>
+
+  <!-- Scrollable layers -->
+  <div class="lp-scroll">
+
+    <!-- Mines group -->
+    <div class="lp-group">
+      <div class="lp-group-header" data-target="grp-mines">
+        <span class="lp-group-title">Mines</span>
+        <span class="lp-chevron" id="chev-mines">▲</span>
+      </div>
+      <div class="lp-group-body" id="grp-mines">
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-active" checked/>
+          <span class="lp-pin active"></span>
+          Mines Actives
+        </label>
+        <label class="lp-layer">
+          <input type="checkbox" id="chk-inactive" checked/>
+          <span class="lp-pin closed"></span>
+          Mines Fermées / Abandonnées
+        </label>
+      </div>
+    </div>
+
+    <!-- Filtre statut -->
+    <div class="lp-group">
+      <div class="lp-group-header" data-target="grp-filter">
+        <span class="lp-group-title">Filtres</span>
+        <span class="lp-chevron" id="chev-filter">▲</span>
+      </div>
+      <div class="lp-group-body" id="grp-filter">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:.72rem;color:var(--text-muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Substance</label>
+          <select id="filter-sub" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:.78rem;padding:5px 8px;outline:none;cursor:pointer;">
+            <option value="">Toutes les substances</option>
+            <option value="Soufre">Soufre</option>
+            <option value="Cobalt">Cobalt</option>
+            <option value="Plomb">Plomb</option>
+            <option value="Zinc">Zinc</option>
+            <option value="Or">Or</option>
+            <option value="Argent">Argent</option>
+            <option value="Cuivre">Cuivre</option>
+            <option value="Manganèse">Manganèse</option>
+            <option value="Phosphate">Phosphate</option>
+            <option value="Nickel">Nickel</option>
+            <option value="Mercure">Mercure</option>
+            <option value="Molybdène">Molybdène</option>
+            <option value="Tungstène">Tungstène</option>
+            <option value="Charbon">Charbon</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end lp-scroll -->
+
+  <!-- Stats -->
+  <div class="lp-stats">
+    <div class="lp-stat"><span id="s-total">1</span><small>Total</small></div>
+    <div class="lp-stat"><span id="s-active">1</span><small>Actives</small></div>
+    <div class="lp-stat"><span id="s-closed">0</span><small>Fermées</small></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RIGHT PANEL
+══════════════════════════════════════════ -->
+<div class="right-panel">
+  <div class="rp-title">Légende</div>
+
+  <div class="rp-section">Statut des mines</div>
+  <div class="rp-item"><span class="rp-pin active"></span>Mines Actives</div>
+  <div class="rp-item"><span class="rp-pin closed"></span>Mines Fermées / Abandonnées</div>
+
+  <div class="rp-divider"></div>
+  <div class="rp-section">Substances</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#3d6b9e">Co</span>Cobalt</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#7a7a7a">Pb</span>Plomb / Zinc</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#b59a2a">Au</span>Or</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#7a9e5a">Cu</span>Cuivre</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#6b4e9e">Mn</span>Manganèse</div>
+  <div class="rp-item"><span class="rp-chip" style="background:#4e7e8e">P</span>Phosphate</div>
+
+  <div class="rp-divider"></div>
+  <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;">
+    Fond : ESRI World Imagery<br/>
+    Carte : Leaflet 1.9.4<br/>
+    © OpenStreetMap contributors
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     POPUP CARD
+══════════════════════════════════════════ -->
+<div class="mine-popup" id="mine-popup" hidden>
+  <button class="popup-close" id="popup-close">✕</button>
+  <div class="popup-body" id="popup-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script>
+/* ════════════════════════════════════════════════
+   1. MINE DATABASE
+   Pour ajouter une mine : copier le bloc template
+   ════════════════════════════════════════════════ */
+const minesData = [
+  {
+    id: 1,
+    name: "Bou Azzer",
+    region: "Drâa-Tafilalet",
+    province: "Ouarzazate",
+    structural_domain: "Anti-Atlas",
+    latitude: 30.5181,
+    longitude: -6.9105,
+    status: "active",
+    main_substance: "Cobalt (Co)",
+    other_substances: ["Nickel (Ni)", "Arsenic (As)"],
+
+    /* ── IDENTIFICATION ── */
+    id_mine:"BOUAZZER-01",
+    massif:"Anti-Atlas central — Boutonnière de Bou Azzer–El Graara",
+    localisation:"Boutonnière allongée WNW–ESE, ~60 km de longueur, 5 à 20 km de largeur",
+    coords_dms:"N 30°31'05.3'' / W 06°54'37.9''",
+    operateur:"Managem (CTT — Compagnie de Tifnout Tiranimine)",
+    duree_exploitation:"Depuis 1934 (SMAG) — exploitation continue à ce jour",
+    rehabilitation:"Mine active",
+
+    deposit_type:"Gisement hydrothermal cobaltifère associé aux serpentinites néoprotérozoïques — seul producteur de cobalt comme substance principale en Afrique.",
+
+    /* ── HISTOIRE ── */
+    histoire:[
+      "La mine de Bou Azzer est située dans la boutonnière de Bou Azzer–El Graara, au cœur de l'Anti-Atlas central, dans la province de Ouarzazate. Cette boutonnière s'allonge suivant une direction générale WNW–ESE, sur près de 60 km de longueur et 5 à 20 km de largeur. Elle regroupe deux principaux centres miniers : Bou Azzer et Bleida. Sur le plan géologique, cette zone appartient à l'Accident Majeur de l'Anti-Atlas, considéré comme une ancienne zone de suture panafricaine marquée par la présence d'un complexe ophiolitique néoprotérozoïque, notamment des serpentinites issues de l'altération des roches ultrabasiques (Leblanc, 1975 ; Soulaimani et al., 2018 ; Levresse, 2018).",
+      "Le district de Bou Azzer est surtout connu pour ses minéralisations cobaltifères. Contrairement à plusieurs districts métallifères où le cobalt est récupéré comme sous-produit, Bou Azzer se distingue par l'exploitation du cobalt comme substance principale. Cette particularité donne à la mine une importance économique et stratégique, surtout dans le contexte actuel où le cobalt est fortement recherché pour les technologies modernes et les batteries électriques (Soulaimani et al., 2018).",
+      "L'histoire minière de Bou Azzer commence avec les premières prospections en 1929, suivies d'une exploitation manuelle en 1932. La production industrielle débute en 1934 avec la SMAG. Entre 1953 et 1958, la société Peñarroya relance l'exploration et développe les travaux miniers. À partir de 1958, l'exploitation passe sous la direction de l'ONA, à travers sa filiale CTT. Par la suite, plusieurs campagnes de prospection ont permis la découverte de nouveaux gisements, notamment Taghouni, Bou Azzer Est et Tamdrost (Soulaimani et al., 2018)."
+    ],
+
+    /* ── GÉOLOGIE ── */
+    roche_enc:"Serpentinites néoprotérozoïques issues de l'altération de roches ultrabasiques — complexe ophiolitique",
+    age_geo:"Néoprotérozoïque (Précambrien)",
+    direction:"WNW–ESE (direction générale de la boutonnière)",
+    ext_h:"~60 km (boutonnière) — corps minéralisés en filons/lentilles localisés",
+    epaisseur:"Variable selon les corps (filons, lentilles, veines, veinules, disséminations)",
+    profondeur:"Variable selon les secteurs (Bou Azzer, Bou Azzer Est, Bleida, Taghouni, Tamdrost)",
+    ctrl_struct:"Accident Majeur de l'Anti-Atlas — ancienne zone de suture panafricaine ; contrôle structural et lithologique majeur (contact serpentinite–diorite quartzique, structures transversales)",
+    intrusion:"Diorite quartzique (contact avec serpentinites)",
+    min_princ:"Skuttérudite, Cobaltite (minéraux porteurs de Co–Ni–Fe–As)",
+    min_assoc:"Arsénopyrite · Chalcopyrite · Pyrite · Sphalérite",
+    gangue:"Serpentinite (roche hôte altérée)",
+    min_sec:"Érythrite (minéral secondaire d'altération dans les zones oxydées)",
+    genese:"Minéralisation hydrothermale liée à la circulation de fluides dans les fractures et zones de contact serpentinite–diorite, dans le contexte de l'Accident Majeur de l'Anti-Atlas (Ennaciri 1995 ; Tourneur 2019)",
+
+    mineralogie_txt:[
+      "Du point de vue métallogénique, les gisements sont dominés par des minéraux porteurs de Co–Ni–Fe–As, notamment les arséniures et sulfo-arséniures. Les principaux minéraux rencontrés sont la skuttérudite, la cobaltite, l'arsénopyrite, ainsi que des sulfures associés comme la chalcopyrite, la pyrite et la sphalérite. Des minéraux secondaires d'altération, comme l'érythrite, peuvent également apparaître dans les zones oxydées. Ces associations minérales traduisent une évolution hydrothermale complexe, liée à la circulation de fluides dans les fractures et les zones de contact (Ennaciri, 1995 ; Tourneur, 2019)."
+    ],
+
+    genese_txt:[
+      "Les minéralisations de Bou Azzer sont principalement de type hydrothermal. Elles sont associées aux serpentinites et se présentent sous forme de filons, lentilles, veines, veinules et disséminations. Dans le secteur de Bou Azzer Est, les corps minéralisés apparaissent soit au contact serpentinite–diorite quartzique, soit dans des structures transversales recoupant les contacts lithologiques. Cette disposition montre le rôle majeur du contrôle structural et lithologique dans la mise en place de la minéralisation (Tourneur, 2019)."
+    ],
+
+    /* ── CADRE GÉOGRAPHIQUE ── */
+    cadre_geo_txt:[
+      "La mine de Bou Azzer est localisée dans la boutonnière de Bou Azzer–El Graara, au niveau de l'Anti-Atlas central, dans la province de Ouarzazate. Elle se situe approximativement aux coordonnées 30°31'05.3''N ; 6°54'37.9''W, soit environ 30.5181° N ; 6.9105° W en coordonnées décimales. Cette boutonnière présente une forme allongée suivant une direction générale WNW–ESE, avec une longueur d'environ 60 km et une largeur variant entre 5 et 20 km. Elle occupe une position importante dans le Sud marocain, le long de l'Accident Majeur de l'Anti-Atlas, qui constitue une structure tectonique régionale majeure.",
+      "Sur le plan minier, la boutonnière de Bou Azzer–El Graara regroupe plusieurs secteurs d'exploitation, dont Bou Azzer, Bou Azzer Est et Bleida. Le secteur de Bou Azzer Est correspond à la partie orientale du district minier. Il est caractérisé par un relief aride, des affleurements précambriens bien exposés et une couverture végétale faible, ce qui rend la zone favorable aux travaux de cartographie géologique, structurale et minière."
+    ],
+
+    geological_description:
+      "Gisement hydrothermal cobaltifère associé aux serpentinites néoprotérozoïques de la boutonnière de Bou Azzer–El Graara (Anti-Atlas central). Minéralisations en filons, lentilles, veines et disséminations, contrôlées par l'Accident Majeur de l'Anti-Atlas. Minéraux principaux : skuttérudite, cobaltite, arsénopyrite. Seul producteur de cobalt comme substance principale en Afrique.",
+
+    mining_waste:
+      "Haldes, stériles miniers, rejets liés à l'exploitation du cobalt. Données détaillées à compléter — voir bibliographie de thèse.",
+    environmental_impacts:
+      "Contamination métallique (Co, Ni, As), drainage minier acide potentiel, dispersion des éléments traces métalliques dans les sols et eaux environnants. Données chiffrées à compléter.",
+    treatment_methods: [
+      "Caractérisation géochimique approfondie des stériles",
+      "Stabilisation physico-chimique",
+      "Récupération des métaux valorisables (Co, Ni)",
+      "Suivi environnemental continu des eaux"
+    ],
+    references:
+      "[1] Leblanc M. (1975). Étude géologique du district de Bou Azzer. | " +
+      "[2] Ennaciri A. (1995). Métallogénie du district de Bou Azzer. | " +
+      "[3] Soulaimani A. et al. (2018). Geology and mineral deposits of the Bou Azzer district, Anti-Atlas, Morocco. | " +
+      "[4] Levresse G. (2018). Ophiolite complex and Co-Ni-As mineralization, Bou Azzer. | " +
+      "[5] Tourneur E. (2019). Structural control of Co-Ni-As mineralization, Bou Azzer Est.",
+    image: null
+  }
+  ,{
+    id:2, name:"Kettara", region:"Marrakech-Safi", province:"Marrakech",
+    structural_domain:"Meseta", latitude:31.8704, longitude:-8.1753,
+    status:"abandoned", main_substance:"Soufre",
+    other_substances:["Cuivre","Ocre","Oxyde de fer (limonite)"],
+    id_mine:"KETTARA-01", massif:"Jebilets centrales (massif hercynien)",
+    localisation:"~30–32 km au nord-nord-ouest de Marrakech",
+    altitude:"500 m", acces:"Route Marrakech–Safi", coords_dms:"N 31°52'15'' / W 08°10'31''",
+    operateur:"SYPEK Corporation",
+    client:"Maroc Chimie 1 (Groupe OCP) usine acide sulfurique, Safi",
+    rehabilitation:"site totalement abandonné ",
+    duree_exploitation:"44 ans (1938–1982)",
+    raisons_fermeture:"Oxydation très rapide de la pyrrhotite lors du stockage et instabilité chimique du concentré · Pauvreté relative en soufre du minerai primaire (25% S) rendant le grillage peu rentable · Quantité excessive de résidus cendreux générés lors du traitement · Corrosion accélérée des infrastructures et équipements par le drainage minier acide (DMA) · Difficultés techniques dans l'utilisation du concentré à l'unité de grillage de Maroc Chimie",
+    phases:[
+      {num:"I",   periode:"1938–1963", substance:"Chapeau de fer — oxyde de fer ", production:"150 000 t à 45–52% Fe "},
+      {num:"II",  periode:"1955–1966", substance:"Pyrite zone de cémentation — Cu récupéré", production:"Réserves : 180 000 t à 38% S"},
+      {num:"III", periode:"1964–1982", substance:"Minerai primaire à pyrrhotite", production:"8 Mt brut → 5,2 Mt concentré à 29% S · réserves ~30 Mt"}
+    ],
+    histoire:[
+      "La mine de Kettara, située dans les Jebilet centrales à environ 32 km au nord de Marrakech, constitue l'un des anciens sites miniers les plus importants du massif hercynien des Jebilet. Le gisement a été découvert grâce à son chapeau de fer bien développé, visible en surface. Ce chapeau de fer correspond à la zone oxydée d'un amas sulfuré profond dominé par la pyrrhotite. Kettara fut ainsi le premier amas sulfuré reconnu dans les Jebilet centrales (Huvelin, 1977 ; Essaifi, 2011).",
+      "L'exploitation de la mine s'est déroulée en trois grandes étapes, correspondant à la zonalité verticale du gisement. La première phase, entre 1938 et 1963, a concerné l'exploitation du chapeau de fer pour l'oxyde de fer et surtout pour les poches d'ocre de bonne qualité. Les tonnages extraits sont estimés à environ 150 000 tonnes de minerai à 45–52 % Fe et 50 000 tonnes à 50–58 % Fe (Huvelin, 1977 ; Essaifi, 2011).",
+      "La deuxième phase, entre 1955 et 1966, a porté sur l'exploitation de la pyrite dans la zone de cémentation. Ce minerai était utilisé pour la fabrication de l'acide sulfurique. Durant cette période, le cuivre était également récupéré à partir de minéraux secondaires comme la chalcocite et la covellite. Les réserves de cette zone étaient estimées à environ 180 000 tonnes à 38 % S (Huvelin, 1977 ; Essaifi, 2011).",
+      "La troisième phase, de 1964 à 1982, correspond à l'exploitation du minerai primaire riche en pyrrhotite, principalement pour la production de soufre destiné à l'usine d'acide sulfurique de Safi. Les réserves du minerai brut étaient estimées à environ 30 millions de tonnes, avec une teneur moyenne de 25 % S et 0,6 % Cu. Environ 8 millions de tonnes ont été extraites pendant cette période (Huvelin, 1977 ; Bernard et al., 1988 ; Essaifi, 2011).",
+      "La mine a été fermée en 1982. Cette fermeture est liée à plusieurs contraintes techniques et économiques : l'oxydation rapide de la pyrrhotite, la faible teneur en soufre du minerai et la production importante de résidus cendreux. Après l'arrêt de l'activité minière, les rejets sulfurés sont restés exposés à l'air libre, ce qui a favorisé l'oxydation des sulfures et la génération de drainage minier acide, avec des risques de contamination des sols et des eaux souterraines (Hakkou et al., 2008 ; Soudani & Taddrart, 2021)."
+    ],
+    deposit_type_titre:"Géologie et mode de genèse du gisement de Kettara",
+    deposit_type:["Le gisement de Kettara est situé dans les Jebilet centrales, à environ 32 km au nord de Marrakech, au sein du massif hercynien des Jebilet. Il appartient à une province métallogénique caractérisée par plusieurs amas sulfurés à pyrrhotite, généralement associés à des chapeaux de fer bien développés en surface. Le corps minéralisé est encaissé dans les métapélites viséennes de la série de Sarhlef, correspondant à une ancienne série argileuse volcano-sédimentaire affectée par un métamorphisme régional de faible degré et par une schistosité subverticale d'âge varisque (Essaifi, 2011).","Sur le plan géométrique, la minéralisation se présente sous forme d'une lentille subverticale de sulfures massifs, orientée approximativement N60, parallèlement à la schistosité régionale. Cette lentille s'étend sur environ 1,6 km de longueur, peut atteindre 70 m d'épaisseur et s'enracine jusqu'à environ 500 m de profondeur. La paragenèse est dominée par la pyrrhotite (plus de 90 %), associée à la pyrite, la chalcopyrite, la magnétite et le glaucodot, tandis que la sphalérite, la galène et l'arsénopyrite apparaissent en phases accessoires. La gangue principale est le chlorite (Essaifi, 2011).","Le gisement est spatialement associé à l'intrusion mafique-ultramafique de Koudiat Kettara, située à environ 1 km au sud-est. L'altération hydrothermale est exprimée par une association quartz–carbonate–chlorite au niveau de l'éponte inférieure et séricite–quartz au niveau de l'éponte supérieure, traduisant une circulation de fluides minéralisateurs contrôlée par les structures tectoniques (Essaifi, 2011).","La genèse du gisement reste discutée entre une origine syngénétique exhalative (type VMS ou SEDEX) et une origine épigénétique liée au remplacement des roches encaissantes. Le modèle épigénétique considère l'amas comme une zone de décharge de fluides induits par la mise en place de l'intrusion gabbroïque de Koudiat Kettara. La signature isotopique du soufre (δ³⁴S = +0,43 ‰) reste compatible avec une source magmatique ou un lessivage convectif des sulfures (Essaifi, 2011).","Les données structurales récentes (Cisse & Wafik, 2026) montrent que le gisement est localisé dans une zone de cisaillement décrochante dextre varisque. La déformation a produit une foliation S1, une foliation pénétrative S2 et des plis tardifs P3 en chevron. Cette évolution a provoqué la rotation progressive du corps sulfuré jusqu'à sa position subverticale actuelle.","Les zones de cisaillement et fabriques C/S ont joué le rôle de drains préférentiels pour les fluides hydrothermaux. La paragenèse montre deux stades métallogéniques : un stade 1 à pyrrhotite massive (fluides Si–S) et un stade 2 à précipitation Cu–Zn–Fe disséminée (fissuration des sulfures et infiltration de fluides enrichis en Cu–Zn–Fe) (Cisse & Wafik, 2026).","L'altération supergène a transformé la partie supérieure en chapeau de fer, exploitée pour l'ocre et les oxydes de fer. La zone de cémentation contient du cuivre natif, de la chalcocite et de la covellite. L'oxydation des rejets sulfurés explique le potentiel de drainage minier acide du site abandonné (Soudani & Taddrart, 2021).","En synthèse, le gisement de Kettara est un amas sulfuré massif à pyrrhotite d'évolution polyphasée : accumulation volcano-sédimentaire viséenne, remobilisation dans une zone de cisaillement dextre varisque, redistribution par fluides hydrothermaux liés à l'intrusion de Koudiat Kettara, puis oxydation supergène responsable du chapeau de fer et des minéraux secondaires de cuivre."],
+    roche_enc:"Métapélites (Schistes du Sarhlef) — Viséen moyen–supérieur",
+    age_geo:"Viséen moyen–supérieur (Carbonifère)",
+    direction:"N60° — parallèle à la schistosité régionale",
+    ext_h:"1,6 km", epaisseur:"70 m", profondeur:"500 m",
+    ctrl_struct:"Zone de cisaillement dextre varisque · fabriques C/S (Cisse & Wafik 2026)",
+    intrusion:"Intrusion mafique-ultramafique Koudiat Kettara (1 km SE)",
+    min_princ:"Pyrrhotite (> 90%)",
+    min_assoc:"Pyrite · Chalcopyrite · Galène · Sphalérite · Arsénopyrite · Galucodot · Magnétite",
+    gangue:"Chlorite",
+    stade1:"Pyrrhotite massive + fluides riches en Si-S — remobilisation syn-métamorphique",
+    stade2:"Précipitation Cu-Zn-Fe disséminée — fracturation + infiltration fluides",
+    zone_cem:"Cuivre natif · Chalcocite · Covellite · Traces Ag + Au",
+    genese:"① VMS/SEDEX (Bernard 1988) <br> ② Épigénétique hydrothermal (Essaifi 2008) <br> ③ Contrôle cisaillement (Cisse 2026)",
+    mineralogie_txt:[
+      "Le minerai de la mine de Kettara est dominé par les sulfures massifs riches en pyrrhotite. La pyrrhotite constitue la phase principale du minerai, avec une proportion supérieure à 90 %. Elle est associée à la pyrite, la chalcopyrite, la magnétite et le glaucodot (Co,Fe)AsS. Des phases accessoires sont également signalées, notamment la sphalérite, la galène et l'arsénopyrite. La gangue principale est représentée par la chlorite (Essaifi, 2011)."
+    ],
+    genese_txt:[
+      "Les données structurales récentes indiquent que le gisement se situe dans une zone de cisaillement ductile dextre appartenant à la chaîne varisque. Le gradient de déformation augmente depuis les roches volcano-sédimentaires encaissantes vers la lentille minéralisée, avec une déformation maximale au contact minerai–encaissant. Cette déformation a produit plusieurs générations structurales : une foliation précoce S1 orientée globalement N45, une foliation pénétrative S2 associée à des plis isoclinaux serrés, puis des plis tardifs P3 en chevron observés dans le corps minéralisé. Ces structures expliquent la rotation tectonique et le redressement progressif de la lentille sulfurée jusqu'à sa position subverticale actuelle (Cisse & Wafik, 2026).",
+      "La genèse du gisement reste discutée. Deux modèles principaux ont été proposés : un modèle syngénétique exhalatif, comparable aux amas sulfurés de type VMS ou SEDEX, et un modèle épigénétique hydrothermal, lié à la circulation de fluides minéralisants et au remplacement des roches encaissantes. Le modèle épigénétique associe la mise en place du gisement à l'activité hydrothermale induite par l'intrusion gabbroïque de Koudiat Kettara, située à proximité du corps sulfuré (Essaifi, 2011)."
+    ],
+    delta_s:"+0,43 ± 0,04 ‰",
+    mineralogie_txt:[
+      "Le minerai de la mine de Kettara est dominé par les sulfures massifs riches en pyrrhotite. La pyrrhotite constitue la phase principale du minerai, avec une proportion supérieure à 90 %. Elle est associée à la pyrite, la chalcopyrite, la magnétite et le glaucodot (Co,Fe)AsS. Des phases accessoires sont également signalées, notamment la sphalérite, la galène et l'arsénopyrite. La gangue principale est représentée par la chlorite (Essaifi, 2011)."
+    ],
+    min_sec:"Halotrichite · Goethite · Jarosite · Copiapite · Gypse · Starkeyite · Alunite · Butterite · Coquimbite",
+    res_brutes:"~30 Mt de minerai brut à 25% S et 0,6% Cu",
+    min_extrait:"~8 Mt de minerai brut extrait",
+    conc_produit:"> 5,2 Mt de minerai sulfuré exploité",
+    vol_res:"> 3 millions de tonnes de déchets miniers", surf_res:"~16 hectares",
+    struct_stock:"Digue (15 m) + Bassin décantation + Piles de stériles",
+    S_solides:"1,6–14,5 wt%", Fe_solides:"17,4–40,7 wt%",
+    S_sol:"4,1% (14× sol témoin)", pH_res:"5,1 ± 0,3 (très acide)",
+    cond_res:"7 570 µS/cm (8× sol témoin)",
+    oxyd_fins:"5–15 cm (hardpan)", oxyd_gros:"jusqu'à 75 cm",
+    AP:"51–453 kg CaCO₃/t", NP:"0–9 kg CaCO₃/t (quasi nul)",
+    NNP:"−453 à −22,5 → acido-générateur", NP_AP:"0–0,1 < 1 → acido-générateur",
+    DMA_dep:"> 42 ans (depuis 1982)",
+    pH_KC1:"6,7 ± 0,4", pH_KC2:"6,9 ± 0,4",
+    cond_KC1:"1 706 ± 37 µS/cm", cond_KC2:"1 830 ± 53 µS/cm",
+    m_res:{Cd:"157,2±8,8", Cu:"969,1±38,7", Pb:"2640,7±42,7", Zn:"2846,8±84,6"},
+    m_KC1:{Cd:"2,6±0,7", Cu:"427,8±25,3", Pb:"384,0±27,1", Zn:"756,4±74,3"},
+    m_KC2:{Cd:"2,2±0,2", Cu:"330,5±22,8", Pb:"355,3±24,0", Zn:"690,5±51,0"},
+    m_tem:{Cd:"0,4±0,1", Cu:"40,7±0,7", Pb:"11,8±1,4", Zn:"133,9±2,0"},
+    CF:{Cd:"6,5", Cu:"10,5", Pb:"32,5", Zn:"5,6"},
+    PI_KC1:"55,1", PI_KC2:"48,9", PI_res:"661,9",
+    SO4_eau:"1 300 mg/L (puits)", SO4_ruis:"jusqu'à 45 g/L",
+    comm:"KC1 + KC2 — 7 000 ha · 72% agricoles",
+    cultures:"Riz paddy · jardins potagers en aval direct",
+    climat:"Méditerranéen aride à semi-aride",
+    precip:"227 mm/an", T_min:"10,3°C (janv.)", T_max:"37,2°C (juil.)", etp:"> 2 500 mm/an",
+    geological_description:"Amas sulfuré massif à pyrrhotite · Jebilets centrales · 1,6 km × 70 m × 500 m (N60°) · Pyrrhotite >90% · Zone cisaillement dextre varisque · Intrusion Koudiat Kettara.",
+    mining_waste:">3 Mt résidus · 16 ha · pH 5,1 · CE 7570 µS/cm · S 4,1% · AP 51–453 · NP 0–9 kg CaCO₃/t · DMA >42 ans.",
+    environmental_impacts:"Pb résidus 2641 · Zn 2847 · Cu 969 · Cd 157 mg/kg · PI KC1=55,1 · PI résidus=661,9 · 7000 ha exposés · Aucune réhabilitation (2026).",
+    treatment_methods:{
+      hakkou:[
+        {opt:"Option 1", titre:"Couverture barrière capillaire (store-and-release)",
+         desc:"Limiter la percolation d'eau dans les résidus réactifs → réduire la production de DMA"},
+        {opt:"Option 2", titre:"Utilisation de stériles alcalins de la carrière phosphatée voisine (Sidi Bou Othmane — OCP)",
+         desc:"Neutralisation de l'acidité → formation d'un hardpan de goethite limitant l'infiltration"}
+      ],
+      barkouch:[
+        {num:"①", titre:"Phytoremédiation avec espèces tolérantes aux métaux lourds"},
+        {num:"②", titre:"Techniques de lavage des sols contaminés"},
+        {num:"③", titre:"Amendements stabilisants : chaux ou biochar pour immobiliser les métaux et améliorer le pH"},
+        {num:"④", titre:"Réglementation de l'usage des terres dans les zones KC1 et KC2"},
+        {num:"⑤", titre:"Programme de surveillance environnementale à long terme (eaux, sols, cultures)"},
+        {num:"⑥", titre:"Coordination entre agences gouvernementales, chercheurs et communautés locales"}
+      ]
+    },
+    references:[
+      {num:"[1]", auteurs:"Hakkou R., Benzaazoua M., Bussière B.",  annee:"2008",
+       titre:"Acid Mine Drainage at the Abandoned Kettara Mine (Morocco): 1. Environmental Characterization.",
+       revue:"Mine Water and Environment", details:"27, 145–159.", doi:"10.1007/s10230-008-0036-6", type:"article"},
+      {num:"[2]", auteurs:"Essaifi A.", annee:"2011",
+       titre:"L'ancienne mine de pyrrhotite de Kettara (Jebilet centrales). In : Michard A. et al. (Eds.), Nouveaux Guides Géologiques et Miniers du Maroc.",
+       revue:"Notes et Mém. Serv. Géol. Maroc", details:"Vol. 9, pp. 205–209.", doi:null, type:"chapitre"},
+      {num:"[3]", auteurs:"Cisse D. & Wafik A.", annee:"2026",
+       titre:"Deformation-assisted fluid flow and massive sulfide evolution in a ductile shear zone: insights from the Kettara mining district.",
+       revue:"EGU General Assembly 2026", details:"Vienne, 3–8 mai 2026.", doi:"10.5194/egusphere-egu26-1754", type:"conference"},
+      {num:"[4]", auteurs:"Barkouch Y., Flata K., El Kherchi O., El Fadeli S., Pineau A.", annee:"2026",
+       titre:"Assessment of Heavy Metal Pollution in Agricultural Soils around Abandoned Kettara Mine in Marrakech, Morocco.",
+       revue:"JJEES — Jordan Journal of Earth and Environmental Sciences", details:"17(1): 1–6. Reçu mars 2025 · Accepté juin 2025.", doi:null, type:"article"}
+    ],
+    references_comp:[
+      {auteurs:"Hakkou R. et al.", annee:"2008",
+       titre:"Acid Mine Drainage at the Abandoned Kettara Mine (Morocco): 2. Mine Waste Geochemical Behavior.",
+       revue:"Mine Water and Environment", details:"27, 160–170.", doi:"10.1007/s10230-008-0037-5"},
+      {auteurs:"El Khalil H. et al.", annee:"2007",
+       titre:"Heavy metal contamination from mining sites in South Morocco.",
+       revue:"Environmental Monitoring and Assessment", details:"", doi:null},
+      {auteurs:"Huvelin P.", annee:"1977",
+       titre:"Étude géologique et gîtologique du massif hercynien des Jebilet.",
+       revue:"Notes Mém. Serv. Géol. Maroc", details:"232 bis.", doi:null},
+      {auteurs:"Bernard A.J., Maier O.W., Mellal A.", annee:"1988",
+       titre:"Aperçu sur les amas sulfurés massifs des Hercynides marocaines.",
+       revue:"Mineralium Deposita", details:"23, 104–114.", doi:null}
+    ],
+    images:[
+      {src:"https://drive.google.com/thumbnail?id=19a2f9auAHhbTon_lk1QavFIc6Q0QZ9om&sz=w1200",
+       label:"Vue panoramique de la mine de Kettara", sub:"Photo terrain — Jebilets centrales, Marrakech", type:"📸 Panoramique"},
+      {src:"https://drive.google.com/thumbnail?id=1PGHGCkgobGz_f18MdQaDFUcDITD5TcWo&sz=w1200",
+       label:"Géologie de la mine de Kettara", sub:"Carte géologique locale — Massif des Jebilets", type:"🗺️ Géologie"},
+      {src:"https://drive.google.com/thumbnail?id=1oazs8r2Rx47QzGd4Z0u7FitKsKP_60QA&sz=w1200",
+       label:"Structure du gisement de Kettara", sub:"Coupe verticale du corps minéralisé — d'après Essaifi & Hibti (2008)", type:"📐 Structure"},
+      {src:"https://drive.google.com/thumbnail?id=1vR6v2IejyhXXxYnzYHxlXlnnAldejwJk&sz=w1200",
+       label:"Vue aérienne de la mine de Kettara", sub:"KC : Kettara Centre — vue aérienne du site", type:"🛰️ Vue aérienne"}
+    ]
+  },
+  {
+    id:3, name:"Imiter", region:"Drâa-Tafilalet", province:"Tinghir",
+    structural_domain:"Anti-Atlas", latitude:31.3454, longitude:-5.7316,
+    status:"active", main_substance:"Argent (Ag)", other_substances:["Mercure (Hg)"],
+    massif:"Anti-Atlas oriental (Jbel Saghro)",
+    operateur:"Managem (SMI — Société Minière d'Imiter)",
+    deposit_type:"Gisement filonien argentifère encaissé dans les formations précambriennes de l'Anti-Atlas oriental.",
+    geological_description:"Gisement d'argent parmi les plus importants d'Afrique, situé dans le massif du Jbel Saghro.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:4, name:"Zgounder", region:"Souss-Massa", province:"Taroudant",
+    structural_domain:"Anti-Atlas", latitude:30.7623, longitude:-7.7424,
+    status:"active", main_substance:"Argent (Ag)", other_substances:["Mercure (Hg)"],
+    massif:"Anti-Atlas central (Massif du Siroua)",
+    operateur:"Aya Gold & Silver",
+    deposit_type:"Gisement argentifère encaissé dans les formations volcano-sédimentaires du massif du Siroua.",
+    geological_description:"Une des plus anciennes mines d'argent du Maroc, en exploitation active.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:6, name:"Tighza", region:"Béni Mellal-Khénifra", province:"Mrirt",
+    structural_domain:"Meseta", latitude:33.1813, longitude:-5.6319,
+    status:"active", main_substance:"Plomb (Pb)", other_substances:["Zinc (Zn)","Argent (Ag)","Or (Au)"],
+    massif:"Maroc central (Massif hercynien)",
+    operateur:"CMT (Compagnie Minière de Touissit)",
+    deposit_type:"Gisement polymétallique Pb-Zn-Ag-Au encaissé dans le massif hercynien du Maroc central.",
+    geological_description:"District minier polymétallique historique du Maroc central.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:7, name:"Drâa Sfar", region:"Marrakech-Safi", province:"Marrakech",
+    structural_domain:"Meseta", latitude:31.7103, longitude:-8.1352,
+    status:"active", main_substance:"Plomb (Pb)", other_substances:["Zinc (Zn)","Cuivre (Cu)","Argent (Ag)"],
+    massif:"Meseta occidentale (Jebilets centrales)",
+    operateur:"Managem (CMG — Cie Minière de Guemassa)",
+    deposit_type:"Amas sulfuré massif polymétallique Pb-Zn-Cu-Ag, encaissé dans les Jebilets centrales — même province métallogénique que Kettara.",
+    geological_description:"Gisement actif voisin de Kettara, dans le même contexte géologique des Jebilets centrales.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:8, name:"Mibladen – Ahouli – Zaïda", region:"Drâa-Tafilalet", province:"Midelt",
+    structural_domain:"Domaine Atlasique", latitude:32.8105, longitude:-4.5933,
+    status:"closed", main_substance:"Plomb (Pb)", other_substances:["Zinc (Zn)","Argent (Ag)"],
+    massif:"Haut Atlas oriental (Haute-Moulouya)",
+    operateur:"BRPM — ONHYM",
+    rehabilitation:"Fermée depuis 1980",
+    deposit_type:"Gisement filonien Pb-Zn-Ag encaissé dans les formations triasiques et jurassiques de la Haute-Moulouya.",
+    geological_description:"Ancien district minier majeur du plomb au Maroc, fermé en 1980.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:9, name:"Sidi Bou Othmane", region:"Marrakech-Safi", province:"El Haouz",
+    structural_domain:"Meseta", latitude:31.8959, longitude:-7.9765,
+    status:"closed", main_substance:"Plomb (Pb)", other_substances:["Zinc (Zn)","Cuivre (Cu)"],
+    massif:"Meseta occidentale (Jebilets sud)",
+    operateur:"CRAM",
+    rehabilitation:"Fermée depuis 1980",
+    deposit_type:"Gisement polymétallique Pb-Zn-Cu dans la partie sud des Jebilets.",
+    geological_description:"Ancienne carrière phosphatée/polymétallique voisine de Kettara — ses stériles alcalins ont été proposés pour la réhabilitation de Kettara (Hakkou et al. 2008).",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:10, name:"Azegour", region:"Marrakech-Safi", province:"Al Haouz",
+    structural_domain:"Domaine Atlasique", latitude:31.149, longitude:-8.3023,
+    status:"closed", main_substance:"Cuivre (Cu)", other_substances:["Molybdène (Mo)","Tungstène (W)"],
+    massif:"Haut Atlas occidental (Anti-Atlas métasomatique)",
+    operateur:"Office des Mines",
+    rehabilitation:"Fermée depuis 1971",
+    deposit_type:"Gisement skarn à Cu-Mo-W lié à une intrusion granitique dans le Haut Atlas occidental.",
+    geological_description:"Gisement métasomatique de contact, historiquement exploité pour le cuivre, molybdène et tungstène.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  },
+  {
+    id:11, name:"Jerada", region:"Oriental", province:"Jerada",
+    structural_domain:"Domaine Atlasique", latitude:34.3044, longitude:-2.1975,
+    status:"closed", main_substance:"Charbon (Anthracite)", other_substances:[],
+    massif:"Maroc oriental (Hauts Plateaux)",
+    operateur:"Société des Charbonnages du Maroc (CDM)",
+    rehabilitation:"Fermée depuis 2001",
+    deposit_type:"Bassin houiller du Maroc oriental, exploitation d'anthracite dans les Hauts Plateaux.",
+    geological_description:"Ancien bassin charbonnier le plus important du Maroc, fermé en 2001.",
+    mining_waste:"Données à compléter — voir bibliographie de thèse.",
+    environmental_impacts:"Données à compléter — voir bibliographie de thèse.",
+    treatment_methods:["Données à compléter"],
+    references:"À compléter — voir bibliographie de thèse.",
+    images:[]
+  }
+];
+
+/* ════════════════════════════════════════════════
+   2. CONFIG
+   ════════════════════════════════════════════════ */
+const DOMAIN_COLORS = {
+  "Rif":               "#6b8f71",
+  "Meseta":            "#8b7355",
+  "Domaine Atlasique": "#b5762a",
+  "Anti-Atlas":        "#c4703f",
+  "Domaine Saharien":  "#d4a853"
+};
+
+const STATUS = {
+  active:    { label:"Active",     color:"#2ecc71", css:"active" },
+  closed:    { label:"Fermée",    color:"#e74c3c", css:"closed" },
+  abandoned: { label:"Abandonnée",color:"#e74c3c", css:"closed" }
+};
+
+/* ════════════════════════════════════════════════
+   3. MAP — ESRI Satellite par défaut
+   ════════════════════════════════════════════════ */
+const map = L.map("map", {
+  center: [29.5, -7.5],
+  zoom: 6,
+  zoomControl: true,
+  attributionControl: true
+});
+
+// Basemap layers
+const basemaps = {
+  satellite: L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { attribution: "© ESRI World Imagery", maxZoom: 19 }
+  ),
+  topo: L.tileLayer(
+    "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    { attribution: "© OpenTopoMap contributors", maxZoom: 17 }
+  ),
+  osm: L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { attribution: "© OpenStreetMap contributors", maxZoom: 19 }
+  )
+};
+
+// Couche de labels par-dessus le satellite
+const labels = L.tileLayer(
+  "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+  { opacity: 0.7, maxZoom: 19 }
+);
+
+basemaps.satellite.addTo(map);
+labels.addTo(map);
+
+let currentBM = "satellite";
+
+function switchBasemap(key) {
+  Object.values(basemaps).forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+  basemaps[key].addTo(map);
+  // Labels seulement sur satellite
+  if (key === "satellite") {
+    if (!map.hasLayer(labels)) labels.addTo(map);
+  } else {
+    if (map.hasLayer(labels)) map.removeLayer(labels);
+  }
+  currentBM = key;
+  document.querySelectorAll(".bm-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("bm-" + key).classList.add("active");
+}
+
+document.getElementById("bm-satellite").addEventListener("click", () => switchBasemap("satellite"));
+document.getElementById("bm-topo").addEventListener("click",      () => switchBasemap("topo"));
+document.getElementById("bm-osm").addEventListener("click",       () => switchBasemap("osm"));
+
+/* domaines structuraux supprimés */
+
+/* ════════════════════════════════════════════════
+   5. MARKERS
+   ════════════════════════════════════════════════ */
+function pinIcon(status) {
+  const isActive = (status === "active");
+  const fill   = isActive ? "%231a7a45" : "%23c0392b";
+  const bg     = isActive ? "%23eafaf1" : "%23fdf0ef";
+  const border = isActive ? "%231a7a45" : "%23c0392b";
+
+  /* ── Casque minier SVG ── */
+  const helmetSVG =
+    "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 52'%3E" +
+
+    /* Ombre portée légère */
+    "%3Cellipse cx='22' cy='50' rx='10' ry='3' fill='%23000' opacity='.12'/%3E" +
+
+    /* Corps principal du marqueur (cercle) */
+    "%3Ccircle cx='22' cy='21' r='19' fill='" + bg + "' stroke='" + border + "' stroke-width='2.2'/%3E" +
+
+    /* Casque — calotte supérieure */
+    "%3Cpath d='M8 21 Q8 7 22 6 Q36 7 36 21 Z' fill='" + fill + "'/%3E" +
+
+    /* Bord horizontal du casque */
+    "%3Crect x='6' y='20' width='32' height='4.5' rx='2.2' fill='" + fill + "'/%3E" +
+
+    /* Visière (rectangle translucide) */
+    "%3Crect x='14' y='12' width='16' height='11' rx='2' fill='" + bg + "' opacity='.85'/%3E" +
+
+    /* Ligne de reflet sur la calotte */
+    "%3Cpath d='M13 12 Q18 8 26 10' stroke='" + bg + "' stroke-width='2' fill='none' stroke-linecap='round' opacity='.6'/%3E" +
+
+    /* Pointe triangulaire */
+    "%3Cpolygon points='22,42 15,31 29,31' fill='" + border + "'/%3E" +
+
+    "%3C/svg%3E";
+
+  return L.icon({
+    iconUrl:       "data:image/svg+xml," + helmetSVG,
+    iconSize:      [30, 36],
+    iconAnchor:    [15, 36],
+    tooltipAnchor: [0, -36]
+  });
+}
+
+const layerActive   = L.layerGroup().addTo(map);
+const layerInactive = L.layerGroup().addTo(map);
+const markerIndex   = [];
+
+minesData.forEach(mine => {
+  const marker = L.marker([mine.latitude, mine.longitude], {
+    icon: pinIcon(mine.status),
+    title: mine.name
+  });
+
+  const st = STATUS[mine.status] || STATUS.active;
+  /* Label permanent sous le marqueur */
+  marker.bindTooltip(mine.name, {
+    className:   "mine-label",
+    permanent:   true,
+    direction:   "bottom",
+    offset:      [0, 4]
+  });
+
+  /* Tooltip détaillé au survol */
+  marker.bindPopup(
+    `<strong>${mine.name}</strong><br/><span style="color:${st.color}">${st.label}</span> · ${mine.main_substance}`,
+    { className:"mine-tip-hover", closeButton:false, autoClose:true, maxWidth:200 }
+  );
+
+  marker.on("click", e => {
+    L.DomEvent.stopPropagation(e);
+    openPopup(mine);
+  });
+
+  const grp = mine.status === "active" ? layerActive : layerInactive;
+  marker.addTo(grp);
+  markerIndex.push({ mine, marker, grp });
+});
+
+// Stats
+const total = minesData.length;
+const nActive = minesData.filter(m => m.status === "active").length;
+document.getElementById("s-total").textContent  = total;
+document.getElementById("s-active").textContent = nActive;
+document.getElementById("s-closed").textContent = total - nActive;
+document.getElementById("topbar-count").textContent = total + (total > 1 ? " sites indexés" : " site indexé");
+
+/* ════════════════════════════════════════════════
+   6. POPUP
+   ════════════════════════════════════════════════ */
+const popupEl   = document.getElementById("mine-popup");
+const popupBody = document.getElementById("popup-body");
+let currentMine = null;
+
+function openPopup(mine) {
+  currentMine = mine;
+  popupBody.innerHTML = buildPopup(mine);
+  popupEl.hidden = false;
+}
+
+/* Génère et télécharge un fichier JSON avec toutes les données de la mine affichée */
+function downloadMineData() {
+  if (!currentMine) return;
+  const blob = new Blob([JSON.stringify(currentMine, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `mine_${(currentMine.id_mine || currentMine.name || "data").toString().replace(/[^a-z0-9_-]+/gi,"_")}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function closePopup() { popupEl.hidden = true; }
+
+document.getElementById("popup-close").addEventListener("click", closePopup);
+map.on("click", closePopup);
+
+function buildPopup(mine) {
+  const st = STATUS[mine.status] || STATUS.active;
+  const dc = DOMAIN_COLORS[mine.structural_domain] || "#888";
+  const subs = `<span class="sub-main">${mine.main_substance}</span>` +
+    (mine.other_substances||[]).map(s=>`<span class="sub-other">${s}</span>`).join("");
+  /* ── Génération section valorisation ── */
+  const treat = (mine.treatment_methods && mine.treatment_methods.hakkou) ? `
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <div>
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+          color:#1a56a8;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="width:3px;height:14px;background:#1a56a8;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+          Propositions techniques — Hakkou et al. (2008)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${mine.treatment_methods.hakkou.map(h=>`
+          <div style="background:#f0f4ff;border:1px solid #c7d9f5;border-radius:8px;padding:10px 14px;">
+            <div style="font-size:.82rem;font-weight:700;color:#1a56a8;margin-bottom:4px;">${h.opt}</div>
+            <div style="font-size:12pt;font-weight:600;color:#1a1f2e;margin-bottom:3px;font-family:'Times New Roman',Times,serif;">${h.titre}</div>
+            <div style="font-size:.84rem;color:#4a5568;line-height:1.55;">→ ${h.desc}</div>
+          </div>`).join("")}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+          color:#1a7a45;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="width:3px;height:14px;background:#1a7a45;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+          Recommandations récentes — Barkouch et al. (2026)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${mine.treatment_methods.barkouch.map(b=>`
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;
+            background:#eafaf1;border:1px solid #a8d5bc;border-radius:8px;">
+            <span style="font-size:1rem;flex-shrink:0;line-height:1.3;">${b.num}</span>
+            <span style="font-size:12pt;color:#1a1f2e;line-height:1.5;font-family:'Times New Roman',Times,serif;">${b.titre}</span>
+          </div>`).join("")}
+        </div>
+      </div>
+
+    </div>
+  ` : Array.isArray(mine.treatment_methods)
+    ? `<ul>${mine.treatment_methods.map(t=>`<li>${t}</li>`).join("")}</ul>`
+    : `<p>${mine.treatment_methods||""}</p>`;
+
+  const fld = (lbl,val,style="") =>
+    `<div class="popup-field" style="${style}"><label>${lbl}</label><span>${val||"—"}</span></div>`;
+
+  const phasesH = mine.phases ? `
+    <div class="fsc fs-lf">
+
+      <!-- Titre rouge avec barre -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #fde8e6;">
+        <span style="width:4px;height:18px;background:#c0392b;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:14pt;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#c0392b;font-family:'Times New Roman',Times,serif;">Histoire de la mine de Kettara</span>
+      </div>
+
+      <!-- Texte historique en Times New Roman -->
+      ${mine.histoire ? mine.histoire.map(p=>`
+        <p style="font-family:'Times New Roman',Times,serif;font-size:12pt;color:#1a1f2e;
+          line-height:1.5;text-align:justify;margin:0 0 1em 0;">${p}</p>
+      `).join("") : ""}
+
+      <!-- Séparateur avant tableau -->
+      <div style="margin:20px 0 14px;display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;height:1px;background:#dde1e8;"></div>
+        <span style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+          color:#1a7a45;white-space:nowrap;padding:0 4px;">Synthèse des phases d'exploitation</span>
+        <div style="flex:1;height:1px;background:#dde1e8;"></div>
+      </div>
+
+      <!-- Tableau des phases amélioré -->
+      <table style="width:100%;border-collapse:collapse;font-family:'Times New Roman',Times,serif;font-size:12pt;border-radius:8px;overflow:hidden;border:1px solid #dde1e8;">
+        <thead>
+          <tr style="background:#eafaf1;">
+            <th style="color:#1a7a45;padding:10px 14px;font-size:.72rem;font-weight:800;
+              letter-spacing:.08em;text-transform:uppercase;text-align:left;
+              border-bottom:2px solid #a8d5bc;width:60px;">PHASE</th>
+            <th style="color:#1a7a45;padding:10px 14px;font-size:.72rem;font-weight:800;
+              letter-spacing:.08em;text-transform:uppercase;text-align:left;
+              border-bottom:2px solid #a8d5bc;width:120px;">PÉRIODE</th>
+            <th style="color:#1a7a45;padding:10px 14px;font-size:.72rem;font-weight:800;
+              letter-spacing:.08em;text-transform:uppercase;text-align:left;
+              border-bottom:2px solid #a8d5bc;">SUBSTANCE EXPLOITÉE</th>
+            <th style="color:#1a7a45;padding:10px 14px;font-size:.72rem;font-weight:800;
+              letter-spacing:.08em;text-transform:uppercase;text-align:left;
+              border-bottom:2px solid #a8d5bc;">PRODUCTION / RÉSERVES</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${mine.phases.map((p,i)=>`
+          <tr style="border-bottom:1px solid #eef0f4;background:${i%2===0?'#fff':'#f9fafb'};">
+            <td style="padding:11px 14px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;
+                width:28px;height:28px;background:#1a7a45;color:#fff;
+                font-weight:800;font-size:12pt;border-radius:50%;">${p.num}</span>
+            </td>
+            <td style="padding:11px 14px;color:#1a1f2e;font-weight:700;font-size:12pt;font-family:'Times New Roman',Times,serif;">${p.periode}</td>
+            <td style="padding:11px 14px;color:#4a5568;font-size:12pt;line-height:1.5;font-family:'Times New Roman',Times,serif;">${p.substance}</td>
+            <td style="padding:11px 14px;color:#4a5568;font-size:12pt;line-height:1.5;font-family:'Times New Roman',Times,serif;">${p.production}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+
+    </div>` : "";
+
+  const metauxH = mine.m_KC1 ? `
+    ${mine.images && mine.images.find(im=>im.type && im.type.includes("aérienne")) ? `
+    <div class="fsc fs-lf" style="padding:0;overflow:hidden;">
+      <div style="position:relative;">
+        <img src="${mine.images.find(im=>im.type.includes('aérienne')).src}"
+             alt="Vue aérienne de la mine"
+             style="width:100%;max-height:380px;object-fit:cover;display:block;cursor:pointer;"
+             onclick="openLightbox(window._lbImgs, window._lbImgs.findIndex(i=>i.type && i.type.includes('aérienne')))"
+             onerror="this.style.opacity='0.3'">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));
+          padding:30px 18px 12px;">
+          <div style="color:#fff;font-size:14pt;font-weight:700;font-family:'Times New Roman',Times,serif;">
+            ${mine.images.find(im=>im.type.includes('aérienne')).label}
+          </div>
+          <div style="color:#e0e0e0;font-size:12pt;font-family:'Times New Roman',Times,serif;">
+            ${mine.images.find(im=>im.type.includes('aérienne')).sub}
+          </div>
+        </div>
+      </div>
+    </div>` : ""}
+
+    <div class="fsc fs-lf"><div class="fsct">Métaux lourds — Barkouch et al. 2026 (données terrain 2024–2025)</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12pt;font-family:'Times New Roman',Times,serif;">
+        <tr style="border-bottom:2px solid #d4edda;">
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;">ÉLÉMENT</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;">SIGNIFICATION</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">KC1 (mg/kg)</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">KC2 (mg/kg)</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">MTK — Résidus (mg/kg)</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">Sol Témoin (mg/kg)</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">CF KC1</th>
+        </tr>
+        ${[["Cd","Cadmium"],["Cu","Cuivre"],["Pb","Plomb"],["Zn","Zinc"]].map(([m,sig])=>`
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:7px 10px;color:#c0392b;font-weight:700;">${m}</td>
+          <td style="padding:7px 10px;color:#4a5568;">${sig}</td>
+          <td style="padding:7px 10px;text-align:center;color:#b45309;font-weight:700;">${mine.m_KC1[m]}</td>
+          <td style="padding:7px 10px;text-align:center;color:#b45309;font-weight:700;">${mine.m_KC2[m]}</td>
+          <td style="padding:7px 10px;text-align:center;color:#c0392b;font-weight:700;">${mine.m_res[m]}</td>
+          <td style="padding:7px 10px;text-align:center;color:#1a7a45;font-weight:700;">${mine.m_tem[m]}</td>
+          <td style="padding:7px 10px;text-align:center;font-weight:700;">${mine.CF[m]}</td>
+        </tr>`).join("")}
+      </table>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+        <span style="font-size:12pt;font-family:'Times New Roman',Times,serif;background:#fdf0ef;border:1px solid #e8b4b0;color:#c0392b;padding:4px 12px;border-radius:20px;font-weight:700;">PI KC1 = ${mine.PI_KC1} ⚠</span>
+        <span style="font-size:12pt;font-family:'Times New Roman',Times,serif;background:#fdf0ef;border:1px solid #e8b4b0;color:#c0392b;padding:4px 12px;border-radius:20px;font-weight:700;">PI KC2 = ${mine.PI_KC2}</span>
+        <span style="font-size:12pt;font-family:'Times New Roman',Times,serif;background:#fde8e6;border:1px solid #c0392b;color:#c0392b;padding:4px 12px;border-radius:20px;font-weight:700;">PI Résidus = ${mine.PI_res} ⚠⚠</span>
+        <span style="font-size:12pt;font-family:'Times New Roman',Times,serif;color:#718096;">Seuil légal = 1</span>
+      </div>
+    </div>
+
+    <!-- Indices de pollution -->
+    <div class="fsc fs-lf"><div class="fsct">Indices de pollution</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12pt;font-family:'Times New Roman',Times,serif;">
+        <tr style="border-bottom:2px solid #d4edda;">
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;">INDICE</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;">SIGNIFICATION</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:center;">VALEUR</th>
+        </tr>
+        ${[
+          ["PI KC1","Indice de pollution du site Kettara Rural Center 1","55,1"],
+          ["PI KC2","Indice de pollution du site Kettara Rural Center 2","48,9"],
+          ["PI MTK","Indice de pollution des résidus miniers de Kettara","661,9"],
+          ["Seuil légal","Limite de référence pour considérer une contamination anthropique","PI &gt; 1"]
+        ].map(([ind,sig,val])=>`
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:7px 10px;color:#c0392b;font-weight:700;">${ind}</td>
+          <td style="padding:7px 10px;color:#4a5568;">${sig}</td>
+          <td style="padding:7px 10px;text-align:center;color:#1a1f2e;font-weight:700;">${val}</td>
+        </tr>`).join("")}
+      </table>
+    </div>
+
+    <!-- Signification des abréviations -->
+    <div class="fsc fs-lf"><div class="fsct">Signification des abréviations</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12pt;font-family:'Times New Roman',Times,serif;">
+        <tr style="border-bottom:2px solid #d4edda;">
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;width:120px;">ABRÉVIATION</th>
+          <th style="color:#1a7a45;padding:7px 10px;font-size:14pt;text-align:left;">SIGNIFICATION</th>
+        </tr>
+        ${[
+          ["KC1","Kettara Rural Center 1 : premier secteur rural proche de la mine"],
+          ["KC2","Kettara Rural Center 2 : deuxième secteur rural proche de la mine"],
+          ["MTK","Mine Tailings Kettara : résidus miniers de Kettara"]
+        ].map(([ab,sig])=>`
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:7px 10px;color:#1a56a8;font-weight:700;">${ab}</td>
+          <td style="padding:7px 10px;color:#4a5568;">${sig}</td>
+        </tr>`).join("")}
+      </table>
+    </div>` : "";
+
+  /* ── Galerie d'images ── */
+  if(mine.images) window._lbImgs = mine.images;
+  const galleryHTML = mine.images && mine.images.length ? `
+    <div class="fsc fs-lf">
+      <div class="fsct">Galerie photographique & cartographique</div>
+      <div class="img-gallery">
+        ${mine.images.map((img,i) => `
+        <div class="img-card" onclick="openLightbox(window._lbImgs,${i})">
+          <img src="${img.src}" alt="${img.label}"
+               onerror="this.style.opacity='0.3'">
+          <div class="img-card-lbl">
+            <div class="img-card-type">${img.type}</div>
+            ${img.label}
+          </div>
+        </div>`).join("")}
+      </div>
+    </div>` : "";
+
+  return `
+    <!-- HEADER -->
+    <div class="popup-header">
+      <div class="popup-pin ${st.css}"></div>
+      <div style="flex:1;">
+        <div class="popup-mine-name" >${mine.name}</div>
+        <div class="popup-tags">
+          <span class="popup-tag domain" style="background:${dc};">${mine.structural_domain}</span>
+          <span class="popup-tag status-${mine.status}">${st.label}</span>
+          ${mine.id_mine?`<span style="font-size:.7rem;color:#718096;background:#f7f8fa;padding:2px 8px;border-radius:10px;border:1px solid #dde1e8;">ID : ${mine.id_mine}</span>`:""}
+        </div>
+      </div>
+    </div>
+
+    <!-- Coords + substances -->
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+      <div class="popup-coords">📍 ${mine.latitude.toFixed(4)}° N | ${Math.abs(mine.longitude).toFixed(4)}° W ${mine.coords_dms?"· "+mine.coords_dms:""}</div>
+      <div class="popup-subs" style="margin:0;">${subs}</div>
+    </div>
+
+    <!-- 4 cartes identification -->
+    <div style="display:grid;grid-template-columns:${mine.status==='active' ? '1fr 1fr' : '1.3fr 1fr 1.7fr'};gap:14px;margin:0 0 18px;">
+      <div class="fsc"><div class="fsct">Localisation</div>
+        ${fld("Région",mine.region)}
+        ${fld("Province",mine.province)}
+        ${fld("Massif géologique",mine.massif)}
+        ${fld("Altitude",mine.altitude)}
+        ${fld("Localisation précise",mine.localisation)}
+        ${fld("Accès routier",mine.acces)}
+      </div>
+      <div class="fsc"><div class="fsct">Opérateur</div>
+        ${fld("Opérateur",mine.operateur)}
+        ${fld("Client",mine.client)}
+        ${fld("Durée exploitation",mine.duree_exploitation)}
+      </div>
+      ${mine.status !== 'active' ? `
+      <div class="fsc" style="border:1.5px solid #e8b4b0;background:#fdf9f9;"><div class="fsct-red">Raisons de fermeture</div>
+        <p style="font-size:12pt;color:#c0392b;font-weight:700;margin:0 0 10px;font-family:'Times New Roman',Times,serif;">${mine.rehabilitation||"—"}</p>
+        ${mine.raisons_fermeture ? `
+          <ul style="margin:0;padding-left:18px;font-size:12pt;color:#4a5568;line-height:1.5;font-family:'Times New Roman',Times,serif;">
+            ${mine.raisons_fermeture.split("·").map(r=>`<li style="margin-bottom:5px;">${r.trim()}</li>`).join("")}
+          </ul>` : ""}
+      </div>` : ""}
+    </div>
+
+    <!-- Type de gisement -->
+    ${galleryHTML}
+
+    <!-- Cadre géographique (texte complet) -->
+    ${mine.cadre_geo_txt ? `
+    <div class="fsc fs-lf">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #d4edda;">
+        <span style="width:4px;height:18px;background:#1a7a45;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:14pt;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#1a7a45;font-family:'Times New Roman',Times,serif;">Cadre géographique</span>
+      </div>
+      ${mine.cadre_geo_txt.map(p=>`
+        <p style="font-family:'Times New Roman',Times,serif;font-size:12pt;color:#1a1f2e;
+          line-height:1.5;text-align:justify;margin:0 0 1em 0;">${p}</p>
+      `).join("")}
+    </div>` : ""}
+
+    <div class="fsc fs-lf">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #fde8e6;">
+        <span style="width:4px;height:18px;background:#c0392b;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#c0392b;">${mine.deposit_type_titre||"Géologie & Genèse"}</span>
+      </div>
+      ${Array.isArray(mine.deposit_type)
+        ? mine.deposit_type.map(p=>`<p style="font-family:'Times New Roman',Times,serif;font-size:12pt;color:#1a1f2e;line-height:1.5;text-align:justify;margin:0 0 1em 0;">${p}</p>`).join("")
+        : `<p style="font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.5;margin:0;">${mine.deposit_type}</p>`}
+    </div>
+
+    <!-- Géologie — Corps minéralisé uniquement -->
+    <div class="fsc fs-lf"><div class="fsct">Corps minéralisé</div>
+      <div class="popup-grid">
+        ${fld("Roche encaissante",mine.roche_enc)}${fld("Âge géologique",mine.age_geo)}
+        ${fld("Direction",mine.direction)}${fld("Extension horizontale",mine.ext_h)}
+        ${fld("Épaisseur max.",mine.epaisseur)}${fld("Profondeur",mine.profondeur)}
+      </div>
+    </div>
+
+    <!-- Texte complet Minéralogie -->
+    ${mine.mineralogie_txt ? `
+    <div class="fsc fs-lf">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #d4edda;">
+        <span style="width:4px;height:18px;background:#1a7a45;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:14pt;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#1a7a45;font-family:'Times New Roman',Times,serif;">Minéralogie</span>
+      </div>
+      ${mine.mineralogie_txt.map(p=>`
+        <p style="font-family:'Times New Roman',Times,serif;font-size:12pt;color:#1a1f2e;
+          line-height:1.5;text-align:justify;margin:0 0 1em 0;">${p}</p>
+      `).join("")}
+    </div>` : ""}
+
+    <!-- Texte complet Genèse -->
+    ${mine.genese_txt ? `
+    <div class="fsc fs-lf">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #d4edda;">
+        <span style="width:4px;height:18px;background:#1a7a45;border-radius:2px;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-size:14pt;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#1a7a45;font-family:'Times New Roman',Times,serif;">Genèse du gisement</span>
+      </div>
+      ${mine.genese_txt.map(p=>`
+        <p style="font-family:'Times New Roman',Times,serif;font-size:12pt;color:#1a1f2e;
+          line-height:1.5;text-align:justify;margin:0 0 1em 0;">${p}</p>
+      `).join("")}
+    </div>` : ""}
+
+    <!-- Phases historiques -->
+    ${phasesH}
+
+    <!-- Statistiques de production seule -->
+    <div class="fsc fs-lf"><div class="fsct">Statistiques de production — Mine de Kettara</div>
+      <div class="popup-grid">
+        ${fld("Réserves brutes",mine.res_brutes)}
+        ${fld("Minerai extrait",mine.min_extrait)}
+        ${fld("Production totale",mine.conc_produit)}
+        ${fld("Volume des résidus",mine.vol_res)}
+        ${fld("Surface des résidus",mine.surf_res)}
+      </div>
+    </div>
+
+    <!-- Déchets miniers + Contexte climatique -->
+    <div class="fs-l2">
+      <div class="fsc"><div class="fsct">Déchets miniers</div>
+        ${fld("pH résidus","<span style='color:#c0392b;font-weight:700;'>"+mine.pH_res+"</span>")}
+        ${fld("Conductivité résidus",mine.cond_res)}
+        ${fld("Teneur S sol",mine.S_sol)}${fld("Teneur S solides",mine.S_solides)}
+        ${fld("Teneur Fe solides",mine.Fe_solides)}${fld("Vol. oxydation fins",mine.oxyd_fins)}
+        ${fld("Vol. oxydation grossiers",mine.oxyd_gros)}${fld("Structure stockage",mine.struct_stock)}
+      </div>
+      <div class="fsc"><div class="fsct">Contexte climatique (Barkouch 2026)</div>
+        ${fld("Type de climat",mine.climat)}${fld("Précipitations",mine.precip)}
+        ${fld("T° min. (janvier)",mine.T_min)}${fld("T° max. (juillet)",mine.T_max)}
+        ${fld("Évapotranspiration",mine.etp)}
+      </div>
+    </div>
+
+    <!-- Impacts environnementaux + Potentiel DMA -->
+    <div class="fs-l2">
+      <div class="fsc"><div class="fsct">Impacts environnementaux</div>
+        ${fld("SO₄ eaux souterraines",mine.SO4_eau)}${fld("SO₄ ruissellement",mine.SO4_ruis)}
+        ${fld("pH KC1 / KC2",mine.pH_KC1+" / "+mine.pH_KC2)}
+        ${fld("Conductivité KC1/KC2",mine.cond_KC1+" / "+mine.cond_KC2)}
+        ${fld("Communautés exposées",mine.comm)}${fld("Cultures exposées",mine.cultures)}
+      </div>
+      <div class="fsc" style="border:1.5px solid #e8b4b0;background:#fdf9f9;"><div class="fsct" style="color:#e74c3c;">Potentiel DMA (Hakkou et al. 2008)</div>
+        ${fld("Potentiel Acide AP","<span style='color:#c0392b;font-weight:700;'>"+mine.AP+"</span>")}
+        ${fld("Potentiel Neutral. NP",mine.NP)}
+        ${fld("Bilan NNP","<span style='color:#c0392b;font-weight:700;'>"+mine.NNP+"</span>")}
+        ${fld("NP/AP","<span style='color:#c0392b;font-weight:700;'>"+mine.NP_AP+"</span>")}
+        ${fld("DMA actif depuis","<span style='color:#c0392b;font-weight:700;'>"+mine.DMA_dep+"</span>")}
+        ${fld("Structure stockage",mine.struct_stock)}
+      </div>
+    </div>
+
+    <!-- Tableau métaux lourds -->
+    ${metauxH}
+
+    <!-- Valorisation pleine largeur -->
+    <div class="fsc fs-lf"><div class="fsct">Scénarios de réhabilitation & Valorisation</div>${treat}</div>
+
+    <!-- Références pleine largeur -->
+    <div class="fsc fs-lf"><div class="fsct">Références bibliographiques</div>
+        ${Array.isArray(mine.references) ? `
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            ${mine.references.map(r=>`
+              <div style="display:flex;gap:10px;padding:10px 12px;background:#f7f8fa;border-radius:8px;border-left:3px solid #1a7a45;">
+                <span style="font-size:12pt;font-weight:800;color:#1a7a45;flex-shrink:0;min-width:28px;font-family:'Times New Roman',Times,serif;">${r.num}</span>
+                <div style="flex:1;">
+                  <div style="font-size:12pt;font-weight:600;color:#1a1f2e;margin-bottom:3px;font-family:'Times New Roman',Times,serif;">${r.auteurs} <span style="color:#718096;">(${r.annee})</span></div>
+                  <div style="font-size:.84rem;color:#4a5568;font-style:italic;margin-bottom:3px;line-height:1.5;">${r.titre}</div>
+                  <div style="font-size:.8rem;color:#1a56a8;font-weight:600;">${r.revue} <span style="color:#718096;font-weight:400;">${r.details}</span>
+                    ${r.doi?`<a href="https://doi.org/${r.doi}" target="_blank" style="margin-left:6px;font-size:.75rem;background:#e8f4fd;color:#1a56a8;padding:2px 7px;border-radius:10px;text-decoration:none;border:1px solid #b8d8f0;">DOI ↗</a>`:""}
+                    <span style="margin-left:6px;font-size:.7rem;background:${r.type==='article'?'#eafaf1':r.type==='conference'?'#fdf3e3':'#eef0f4'};color:${r.type==='article'?'#1a7a45':r.type==='conference'?'#b45309':'#4a5568'};padding:2px 7px;border-radius:10px;border:1px solid ${r.type==='article'?'#a8d5bc':r.type==='conference'?'#f0c070':'#dde1e8'};">${r.type==='article'?'Article':'conference'===r.type?'Conférence':'Chapitre'}</span>
+                  </div>
+                </div>
+              </div>`).join("")}
+          </div>
+          ${mine.references_comp && mine.references_comp.length ? `
+            <div style="margin-top:16px;">
+              <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#718096;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #dde1e8;">Sources complémentaires</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                ${mine.references_comp.map(r=>`
+                  <div style="display:flex;gap:8px;padding:8px 12px;background:#f7f8fa;border-radius:6px;border-left:2px solid #dde1e8;">
+                    <div style="flex:1;">
+                      <span style="font-size:.84rem;font-weight:600;color:#1a1f2e;">${r.auteurs} <span style="color:#718096;">(${r.annee})</span></span>
+                      <span style="font-size:.82rem;color:#4a5568;font-style:italic;"> ${r.titre}</span>
+                      <span style="font-size:.8rem;color:#1a56a8;font-weight:600;"> ${r.revue}</span>
+                      <span style="font-size:.78rem;color:#718096;"> ${r.details}</span>
+                      ${r.doi?`<a href="https://doi.org/${r.doi}" target="_blank" style="margin-left:4px;font-size:.72rem;background:#e8f4fd;color:#1a56a8;padding:1px 6px;border-radius:8px;text-decoration:none;">DOI ↗</a>`:""}
+                    </div>
+                  </div>`).join("")}
+              </div>
+            </div>` : ""}
+        ` : `<p style="font-style:italic;color:#4a5568;font-size:.84rem;line-height:1.85;">${mine.references}</p>`}
+      </div>
+    </div>
+
+    <span class="popup-dl" onclick="downloadMineData()">⬇ Télécharger les données</span>
+  `;
+}
+
+/* ════════════════════════════════════════════════
+   7. LAYER TOGGLES
+   ════════════════════════════════════════════════ */
+document.getElementById("chk-active").addEventListener("change", function() {
+  this.checked ? map.addLayer(layerActive) : map.removeLayer(layerActive);
+});
+document.getElementById("chk-inactive").addEventListener("change", function() {
+  this.checked ? map.addLayer(layerInactive) : map.removeLayer(layerInactive);
+});
+/* domaines supprimés */
+
+/* ════════════════════════════════════════════════
+   8. SUBSTANCE FILTER
+   ════════════════════════════════════════════════ */
+document.getElementById("filter-sub").addEventListener("change", function() {
+  const val = this.value.toLowerCase();
+  markerIndex.forEach(({ mine, marker, grp }) => {
+    const substances = [mine.main_substance, ...(mine.other_substances||[])].map(s=>s.toLowerCase());
+    const show = !val || substances.some(s => s.includes(val));
+    if (show) { if (!map.hasLayer(marker)) marker.addTo(grp); }
+    else       { if (map.hasLayer(marker))  map.removeLayer(marker); }
+  });
+});
+
+/* ════════════════════════════════════════════════
+   9. COLLAPSIBLE GROUPS
+   ════════════════════════════════════════════════ */
+document.querySelectorAll(".lp-group-header").forEach(h => {
+  h.addEventListener("click", () => {
+    const body = document.getElementById(h.dataset.target);
+    const chev = h.querySelector(".lp-chevron");
+    const open = !body.classList.contains("hidden");
+    body.classList.toggle("hidden", open);
+    chev.classList.toggle("shut", open);
+  });
+});
+
+/* ════════════════════════════════════════════════
+   10. SEARCH
+   ════════════════════════════════════════════════ */
+const searchInput = document.getElementById("search-input");
+const lpResults   = document.getElementById("lp-results");
+
+/* Échappe les caractères HTML dangereux avant insertion dans le DOM */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function doSearch() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) { lpResults.hidden = true; return; }
+
+  const hits = minesData.filter(m => [
+    m.name, m.region, m.province,
+    m.structural_domain, m.main_substance,
+    ...(m.other_substances||[])
+  ].join(" ").toLowerCase().includes(q));
+
+  lpResults.hidden = false;
+  if (!hits.length) {
+    lpResults.innerHTML = `<div class="lp-no-result">Aucun résultat pour "${escapeHtml(q)}"</div>`;
+    return;
+  }
+
+  lpResults.innerHTML = hits.map(m => {
+    const st = STATUS[m.status] || STATUS.active;
+    return `<div class="lp-result-item" data-id="${m.id}">
+      <span class="lp-result-dot" style="background:${st.color}"></span>
+      <div>
+        <div class="lp-result-name">${m.name}</div>
+        <div class="lp-result-sub">${m.main_substance} · ${m.structural_domain}</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  lpResults.querySelectorAll(".lp-result-item").forEach(el => {
+    el.addEventListener("click", () => {
+      const mine = minesData.find(m => m.id === +el.dataset.id);
+      if (!mine) return;
+      map.flyTo([mine.latitude, mine.longitude], 11, { duration: 1.2 });
+      openPopup(mine);
+      lpResults.hidden = true;
+      searchInput.value = "";
+    });
+  });
+}
+
+searchInput.addEventListener("input", doSearch);
+document.getElementById("search-btn").addEventListener("click", doSearch);
+searchInput.addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+document.addEventListener("click", e => {
+  if (!e.target.closest(".left-panel")) lpResults.hidden = true;
+});
+
+/* ════════════════════════════════════════════════
+   11. FIX LEAFLET SIZE
+   Force Leaflet à recalculer la taille après le rendu
+   ════════════════════════════════════════════════ */
+setTimeout(() => map.invalidateSize(), 100);
+window.addEventListener("resize", () => map.invalidateSize());
+
+/* ── Modal À propos ── */
+document.getElementById("btn-about").addEventListener("click", () => {
+  document.getElementById("about-overlay").classList.add("open");
+});
+function closeAbout() {
+  document.getElementById("about-overlay").classList.remove("open");
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeAbout();
+});
+
+/* ── Lightbox galerie ── */
+let _lbImages = [];
+let _lbIndex  = 0;
+
+function openLightbox(images, index) {
+  _lbImages = images;
+  _lbIndex  = index;
+  _renderLightbox();
+  document.getElementById("lightbox").classList.add("open");
+  document.addEventListener("keydown", _lbKey);
+}
+function _renderLightbox() {
+  const img = _lbImages[_lbIndex];
+  document.getElementById("lb-img").src       = img.src;
+  document.getElementById("lb-caption").textContent = img.label;
+  document.getElementById("lb-sub").textContent     = img.sub || "";
+  document.getElementById("lb-counter").textContent =
+    (_lbIndex + 1) + " / " + _lbImages.length;
+}
+function closeLightbox(e) {
+  if (e && e.target !== document.getElementById("lightbox")) return;
+  _closeLb();
+}
+function closeLightboxBtn() { _closeLb(); }
+function _closeLb() {
+  document.getElementById("lightbox").classList.remove("open");
+  document.removeEventListener("keydown", _lbKey);
+}
+function lightboxNav(dir, e) {
+  e.stopPropagation();
+  _lbIndex = (_lbIndex + dir + _lbImages.length) % _lbImages.length;
+  _renderLightbox();
+}
+function _lbKey(e) {
+  if (e.key === "ArrowRight") lightboxNav(+1, e);
+  if (e.key === "ArrowLeft")  lightboxNav(-1, e);
+  if (e.key === "Escape")     _closeLb();
+}
+
+</script>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightboxBtn()">✕</button>
+  <button class="lightbox-nav prev" onclick="lightboxNav(-1,event)">‹</button>
+  <button class="lightbox-nav next" onclick="lightboxNav(+1,event)">›</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lightbox-caption" id="lb-caption"></div>
+  <div class="lightbox-sub"    id="lb-sub"></div>
+  <div class="lightbox-counter" id="lb-counter"></div>
+</div>
+
+</body>
+</html>
