@@ -338,8 +338,44 @@ function buildMinePdfDocument(mine) {
   return root;
 }
 
+/* Sélecteurs des blocs "atomiques" qu'on évite de couper au milieu d'une page */
+const PDF_AVOID_SELECTORS = ".pdf-fact,.pdf-data-note,.pdf-resource,.pdf-cover,.pdf-endnote,.pdf-brand-row,.pdf-geo-band," +
+  ".popup-field,.popup-coords,.popup-subs,.fsct,.fsct-red,tr,li";
+
+/* Calcule les bornes verticales (en pixels canvas, échelle incluse) des blocs à ne pas couper */
+function pdfAvoidRanges(root, scale) {
+  const rootTop = root.getBoundingClientRect().top;
+  return Array.from(root.querySelectorAll(PDF_AVOID_SELECTORS))
+    .map(el => {
+      const r = el.getBoundingClientRect();
+      return { top: Math.round((r.top - rootTop) * scale), bottom: Math.round((r.bottom - rootTop) * scale) };
+    })
+    .sort((a, b) => a.top - b.top);
+}
+
+/* Découpe la hauteur totale [0, totalHeightPx] en tranches <= pageHeightPx, en repoussant
+   la coupure avant tout bloc "à éviter" qu'elle traverserait (sauf si ça réduirait trop la page). */
+function pdfSlicePages(totalHeightPx, pageHeightPx, avoidRanges) {
+  const slices = [];
+  let y = 0;
+  while (y < totalHeightPx) {
+    let end = Math.min(y + pageHeightPx, totalHeightPx);
+    for (const range of avoidRanges) {
+      if (range.top > y && range.top < end && range.bottom > end) {
+        const elHeight = range.bottom - range.top;
+        if (elHeight <= pageHeightPx && (range.top - y) > pageHeightPx * 0.15) end = range.top;
+        break; /* avoidRanges triés par top : le premier croisement trouvé est le plus proche */
+      }
+    }
+    slices.push([y, end]);
+    y = end;
+  }
+  return slices;
+}
+
 async function downloadMineData() {
-  if (!currentMine || typeof html2pdf !== "function") {
+  const ready = currentMine && typeof html2canvas === "function" && window.jspdf && window.jspdf.jsPDF;
+  if (!ready) {
     alert("Le module PDF n'est pas disponible. Vérifiez votre connexion puis réessayez.");
     return;
   }
@@ -355,27 +391,65 @@ async function downloadMineData() {
   document.body.append(root, overlay);
   const safeName = (currentMine.id_mine || currentMine.name || "mine").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9_-]+/gi, "_");
   try {
-    if (document.fonts?.ready) await document.fonts.ready;
-    const worker = html2pdf().set({
-      margin: [10, 10, 15, 10], filename: `fiche_${safeName}.pdf`,
-      image: { type:"jpeg", quality:0.98 },
-      html2canvas: { scale:2, useCORS:true, allowTaint:false, backgroundColor:"#ffffff", logging:false, windowWidth:718, windowHeight:root.scrollHeight, width:718, height:root.scrollHeight },
-      jsPDF: { unit:"mm", format:"a4", orientation:"portrait", compress:true },
-      pagebreak: { mode:["css","legacy"], avoid:[".pdf-fact",".pdf-data-note",".pdf-resource",".pdf-reference","tr"] }
-    }).from(root).toPdf();
-    const pdf = await worker.get("pdf");
+    /* Attend les polices ET un cycle de mise en page/peinture complet avant la capture :
+       évite le rognage des premiers glyphes (Rajdhani pas encore rasterisé au moment du snapshot). */
+    if (document.fonts?.ready) {
+      await Promise.all([
+        document.fonts.ready,
+        document.fonts.load("800 36px Rajdhani"), document.fonts.load("700 18px Rajdhani"),
+        document.fonts.load("700 15px Rajdhani"), document.fonts.load("700 13px Rajdhani")
+      ]).catch(() => {});
+    }
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const scale = 2;
+    const captureWidth  = root.scrollWidth;
+    const captureHeight = root.scrollHeight;
+
+    /* x/y/scrollX/scrollY à 0 : évite un décalage de capture (source du rognage à gauche) */
+    const canvas = await html2canvas(root, {
+      scale, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", logging: false,
+      x: 0, y: 0, scrollX: 0, scrollY: 0,
+      windowWidth: captureWidth, windowHeight: captureHeight, width: captureWidth, height: captureHeight
+    });
+
+    const avoidRanges = pdfAvoidRanges(root, scale);
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+    const pageWmm = pdf.internal.pageSize.getWidth();
+    const pageHmm = pdf.internal.pageSize.getHeight();
+    const marginTop = 10, marginBottom = 15, marginSide = 10;
+    const contentWmm = pageWmm - marginSide * 2;
+    const contentHmm = pageHmm - marginTop - marginBottom;
+    const pxPerMm = canvas.width / contentWmm;
+    const pageHeightPx = Math.floor(contentHmm * pxPerMm);
+
+    const slices = pdfSlicePages(canvas.height, pageHeightPx, avoidRanges);
+    const sliceCanvas = document.createElement("canvas");
+    sliceCanvas.width = canvas.width;
+    const sliceCtx = sliceCanvas.getContext("2d");
+
+    slices.forEach(([y0, y1], i) => {
+      const sliceHeightPx = y1 - y0;
+      sliceCanvas.height = sliceHeightPx;
+      sliceCtx.clearRect(0, 0, sliceCanvas.width, sliceHeightPx);
+      sliceCtx.drawImage(canvas, 0, y0, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+      const imgData = sliceCanvas.toDataURL("image/jpeg", 0.98);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, "JPEG", marginSide, marginTop, contentWmm, sliceHeightPx / pxPerMm);
+    });
     const pages = pdf.internal.getNumberOfPages();
-    const width = pdf.internal.pageSize.getWidth();
-    const height = pdf.internal.pageSize.getHeight();
     const reference = currentMine.id_mine || `SITE-${currentMine.id}`;
     pdf.setProperties({ title:`Fiche géologique et minière - ${currentMine.name}`, subject:`Morocco Mining WebGIS - ${reference}`, author:"Morocco Mining WebGIS", creator:"Morocco Mining WebGIS" });
-    for (let page=1; page<=pages; page++) {
-      pdf.setPage(page); pdf.setDrawColor(205,218,210); pdf.setLineWidth(0.25); pdf.line(10,height-10.5,width-10,height-10.5);
+    for (let page = 1; page <= pages; page++) {
+      pdf.setPage(page); pdf.setDrawColor(205,218,210); pdf.setLineWidth(0.25); pdf.line(10,pageHmm-10.5,pageWmm-10,pageHmm-10.5);
       pdf.setFont("helvetica","normal"); pdf.setFontSize(7.5); pdf.setTextColor(80,101,90);
-      pdf.text(`MOROCCO MINING WEBGIS  ·  ${reference}`,10,height-6.3);
-      pdf.text(`Page ${page} / ${pages}`,width-10,height-6.3,{align:"right"});
+      pdf.text(`MOROCCO MINING WEBGIS  ·  ${reference}`,10,pageHmm-6.3);
+      pdf.text(`Page ${page} / ${pages}`,pageWmm-10,pageHmm-6.3,{align:"right"});
     }
-    await worker.save();
+
+    pdf.save(`fiche_${safeName}.pdf`);
   } catch (error) {
     console.error("Erreur de génération du PDF :", error);
     alert("La génération du PDF a échoué. Réessayez ou téléchargez plus tard.");
